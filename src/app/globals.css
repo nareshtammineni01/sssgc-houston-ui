@@ -1,0 +1,232 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   SSSGC Houston — Global Styles (matched to mockup)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500&display=swap');
+
+@layer base {
+  :root {
+    /* Brand Colors */
+    --color-saffron: #E8860C;
+    --color-saffron-light: #FFF3E0;
+    --color-maroon: #6B1D2A;
+    --color-maroon-deep: #4A1219;
+    --color-cream: #FDF8F0;
+    --color-cream-dark: #F5EDE0;
+    --color-gold: #C4922A;
+    --color-gold-light: #F0DEB4;
+
+    /* Text — warm tones to match mockup */
+    --color-text: #2C1810;
+    --color-text-muted: #7A6B5F;
+    --color-text-light: #A89888;
+
+    /* Borders — maroon-tinted, not gray */
+    --color-border: rgba(107, 29, 42, 0.1);
+
+    /* Layout */
+    --sidebar-width: 220px;
+    --icon-rail-width: 64px;
+    --topbar-height: 58px;
+    --bottom-nav-height: 64px;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: var(--color-text);
+    background: var(--color-cream);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 500;
+    color: var(--color-maroon);
+  }
+}
+
+@layer components {
+  /* Card — matches mockup: white, maroon-tinted border, 12px radius */
+  .card {
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .card-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-maroon);
+  }
+  .card-link {
+    font-size: 12px;
+    color: var(--color-saffron);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .card-link:hover {
+    text-decoration: underline;
+  }
+  .card-body {
+    padding: 14px 16px;
+  }
+
+  /* Saffron primary button — matches mockup */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background: var(--color-saffron);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    transition: all 0.15s;
+  }
+  .btn-primary:hover {
+    filter: brightness(0.92);
+  }
+
+  /* Ghost button — matches mockup hero secondary */
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    cursor: pointer;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  /* Badge — matches mockup */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .badge-saffron {
+    background: var(--color-saffron);
+    color: white;
+  }
+  .badge-maroon {
+    background: var(--color-maroon);
+    color: white;
+  }
+
+  /* Event tags — match mockup exactly */
+  .evt-tag {
+    display: inline-block;
+    font-size: 9px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-top: 4px;
+  }
+  .evt-tag-devotion { background: #FDE8E8; color: #9B2C2C; }
+  .evt-tag-seva { background: #E8F5E3; color: #276749; }
+  .evt-tag-festival { background: var(--color-saffron-light); color: #92400E; }
+  .evt-tag-educare { background: #EDE7F6; color: #4527A0; }
+  .evt-tag-community { background: #E3F0FF; color: #1565C0; }
+  .evt-tag-special { background: var(--color-saffron-light); color: #92400E; }
+
+  /* Announcement dots — match mockup */
+  .ann-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .ann-dot-devotion { background: var(--color-maroon); }
+  .ann-dot-educare { background: #3182CE; }
+  .ann-dot-seva { background: #38A169; }
+  .ann-dot-community { background: #805AD5; }
+
+  /* Input field */
+  .input {
+    display: block;
+    width: 100%;
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: white;
+    font-size: 13px;
+    color: var(--color-text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    transition: border-color 0.15s;
+  }
+  .input::placeholder {
+    color: var(--color-text-light);
+  }
+  .input:focus {
+    outline: none;
+    border-color: var(--color-saffron);
+  }
+
+  /* Resource filter chips — match mockup */
+  .filter-chip {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    border: 1px solid var(--color-border);
+    background: white;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-chip:hover {
+    border-color: var(--color-saffron);
+  }
+  .filter-chip-active {
+    background: var(--color-maroon);
+    color: white;
+    border-color: var(--color-maroon);
+  }
+}
+
+/* Smooth page transitions */
+@layer utilities {
+  .page-enter {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
