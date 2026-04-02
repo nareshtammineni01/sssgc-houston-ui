@@ -7,6 +7,7 @@ import {
   HandHeart,
   ArrowRight,
 } from 'lucide-react';
+import { LiveTicker } from '@/components/home/LiveTicker';
 
 export default async function HomePage() {
   const supabase = createClient();
@@ -18,11 +19,20 @@ export default async function HomePage() {
   // Fetch latest announcements
   const { data: announcements } = await supabase
     .from('announcements')
-    .select('id, title, body_plain, priority, published_at, image_url')
+    .select('id, title, body_plain, category, is_pinned, published_at')
     .not('published_at', 'is', null)
     .order('is_pinned', { ascending: false })
     .order('published_at', { ascending: false })
     .limit(4);
+
+  // Fetch ticker items (latest published, for live banner)
+  const { data: tickerItems } = await supabase
+    .from('announcements')
+    .select('id, title, body_plain')
+    .not('published_at', 'is', null)
+    .order('is_pinned', { ascending: false })
+    .order('published_at', { ascending: false })
+    .limit(5);
 
   // Fetch upcoming events
   const { data: events } = await supabase
@@ -75,21 +85,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ===== LIVE UPDATES TICKER — matches mockup ===== */}
-      <section
-        className="flex items-center gap-2.5 rounded-lg px-4 py-2.5"
-        style={{ background: '#FFF3E0' }}
-      >
-        <span
-          className="text-[10px] font-medium uppercase tracking-wider px-2.5 py-[3px] rounded whitespace-nowrap"
-          style={{ background: '#E8860C', color: 'white', letterSpacing: '0.5px' }}
-        >
-          Live updates
-        </span>
-        <span className="text-[13px]" style={{ color: '#2C1810' }}>
-          Akhanda Bhajan: Nov 9-10 at the center &middot; Seva signup open for food distribution Dec 7 &middot; Educare spring semester resumes Apr 6
-        </span>
-      </section>
+      {/* ===== LIVE UPDATES TICKER — real-time via Supabase ===== */}
+      <LiveTicker initialItems={tickerItems ?? []} />
 
       {/* ===== THREE PILLARS — matches mockup (centered text, hover lift) ===== */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -223,9 +220,9 @@ export default async function HomePage() {
                           : 'none',
                     }}
                   >
-                    {/* Colored dot */}
+                    {/* Colored dot based on category */}
                     <div
-                      className="ann-dot ann-dot-devotion"
+                      className={`ann-dot ann-dot-${item.category}`}
                       style={{ marginTop: '5px' }}
                     />
                     <div className="flex-1 min-w-0">
@@ -233,7 +230,7 @@ export default async function HomePage() {
                         {item.title}
                       </div>
                       <div className="text-[11px]" style={{ color: '#A89888' }}>
-                        {item.priority !== 'normal' ? `${item.priority} \u00B7 ` : ''}
+                        {item.is_pinned ? 'Pinned \u00B7 ' : ''}
                         {item.published_at ? formatDate(item.published_at) : ''}
                       </div>
                     </div>

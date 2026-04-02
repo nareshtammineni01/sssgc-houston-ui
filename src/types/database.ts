@@ -121,38 +121,97 @@ export type Database = {
         Row: {
           id: string;
           title: string;
-          body_html: string;
+          body: string;
           body_plain: string;
-          image_url: string | null;
-          priority: 'normal' | 'important' | 'urgent';
+          category: 'devotion' | 'educare' | 'seva' | 'general';
           is_pinned: boolean;
+          author_id: string;
+          notify_email: boolean;
+          notify_whatsapp: boolean;
           published_at: string | null;
           expires_at: string | null;
-          author_id: string;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
           title: string;
-          body_html: string;
+          body: string;
           body_plain?: string;
-          image_url?: string | null;
-          priority?: 'normal' | 'important' | 'urgent';
+          category?: 'devotion' | 'educare' | 'seva' | 'general';
           is_pinned?: boolean;
+          author_id: string;
+          notify_email?: boolean;
+          notify_whatsapp?: boolean;
           published_at?: string | null;
           expires_at?: string | null;
-          author_id: string;
         };
         Update: {
           title?: string;
-          body_html?: string;
-          image_url?: string | null;
-          priority?: 'normal' | 'important' | 'urgent';
+          body?: string;
+          category?: 'devotion' | 'educare' | 'seva' | 'general';
           is_pinned?: boolean;
+          notify_email?: boolean;
+          notify_whatsapp?: boolean;
           published_at?: string | null;
           expires_at?: string | null;
           updated_at?: string;
+        };
+      };
+      notification_preferences: {
+        Row: {
+          user_id: string;
+          email_enabled: boolean;
+          whatsapp_enabled: boolean;
+          devotion: boolean;
+          educare: boolean;
+          seva: boolean;
+          general: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          email_enabled?: boolean;
+          whatsapp_enabled?: boolean;
+          devotion?: boolean;
+          educare?: boolean;
+          seva?: boolean;
+          general?: boolean;
+        };
+        Update: {
+          email_enabled?: boolean;
+          whatsapp_enabled?: boolean;
+          devotion?: boolean;
+          educare?: boolean;
+          seva?: boolean;
+          general?: boolean;
+          updated_at?: string;
+        };
+      };
+      notification_log: {
+        Row: {
+          id: string;
+          type: 'email' | 'whatsapp';
+          recipient_id: string;
+          reference_type: string;
+          reference_id: string;
+          status: 'pending' | 'sent' | 'failed';
+          error_message: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          type: 'email' | 'whatsapp';
+          recipient_id: string;
+          reference_type: string;
+          reference_id: string;
+          status?: 'pending' | 'sent' | 'failed';
+          error_message?: string | null;
+        };
+        Update: {
+          status?: 'pending' | 'sent' | 'failed';
+          error_message?: string | null;
         };
       };
       events: {
@@ -274,3 +333,5 @@ export type Event = Database['public']['Tables']['events']['Row'];
 export type Resource = Database['public']['Tables']['resources']['Row'];
 export type DailyQuote = Database['public']['Tables']['daily_quotes']['Row'];
 export type SiteContent = Database['public']['Tables']['site_content']['Row'];
+export type NotificationPreferences = Database['public']['Tables']['notification_preferences']['Row'];
+export type NotificationLog = Database['public']['Tables']['notification_log']['Row'];

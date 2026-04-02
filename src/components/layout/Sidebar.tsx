@@ -28,7 +28,7 @@ const mainNav = [
   { label: 'Seva', href: '/seva', icon: HandHeart },
   { label: 'Resources', href: '/resources', icon: BookOpen, badge: '722' },
   { label: 'Calendar', href: '/calendar', icon: Calendar },
-  { label: 'Announcements', href: '/dashboard', icon: Megaphone },
+  { label: 'Announcements', href: '/announcements', icon: Megaphone },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];
 
