@@ -1,8 +1,16 @@
+<<<<<<< HEAD
+=======
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+>>>>>>> 64a6dfd3403af6f8e2fefbdd3759b30acdbd6a80
 # dependencies
 /node_modules
 /.pnp
 .pnp.js
+<<<<<<< HEAD
 .yarn/install-state.gz
+=======
+>>>>>>> 64a6dfd3403af6f8e2fefbdd3759b30acdbd6a80
 
 # testing
 /coverage
@@ -25,6 +33,10 @@ yarn-error.log*
 
 # local env files
 .env*.local
+<<<<<<< HEAD
+=======
+.env
+>>>>>>> 64a6dfd3403af6f8e2fefbdd3759b30acdbd6a80
 
 # vercel
 .vercel
