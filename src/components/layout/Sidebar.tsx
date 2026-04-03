@@ -124,11 +124,6 @@ export default function Sidebar({ isOpen, onClose, userRole, userName }: Sidebar
             >
               <item.icon size={15} />
               <span className="flex-1">{item.label}</span>
-              {item.badge && (
-                <span className="text-[10px] bg-[#E8860C] text-white px-[7px] py-[1px] rounded-full font-medium">
-                  {item.badge}
-                </span>
-              )}
             </Link>
           ))}
 
