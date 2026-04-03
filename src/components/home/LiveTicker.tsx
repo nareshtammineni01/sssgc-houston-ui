@@ -59,15 +59,15 @@ export function LiveTicker({ initialItems }: LiveTickerProps) {
       style={{ background: '#FFF3E0' }}
     >
       <span
-        className="text-[10px] font-medium uppercase tracking-wider px-2.5 py-[3px] rounded whitespace-nowrap flex-shrink-0"
+        className="live-badge-glow text-[12px] font-semibold uppercase tracking-wider px-3.5 py-[5px] rounded-md whitespace-nowrap flex-shrink-0 relative z-10"
         style={{ background: '#E8860C', color: 'white', letterSpacing: '0.5px' }}
       >
         Live updates
       </span>
-      <div className="overflow-hidden relative flex-1">
+      <div className="overflow-hidden relative flex-1 min-w-0">
         <div className="ticker-scroll whitespace-nowrap">
           <span className="text-[13px]" style={{ color: '#2C1810' }}>
-            {tickerText}
+            {tickerText} &nbsp;&nbsp;&middot;&nbsp;&nbsp; {tickerText}
           </span>
         </div>
       </div>

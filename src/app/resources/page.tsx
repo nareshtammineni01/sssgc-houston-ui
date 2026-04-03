@@ -131,7 +131,7 @@ export default function ResourcesPage() {
   }
 
   return (
-    <div className="page-enter space-y-5">
+    <div className="page-enter space-y-5 px-4 sm:px-0">
       <div className="flex flex-col gap-4">
         <h1 className="text-h1">Resources</h1>
 
@@ -144,21 +144,21 @@ export default function ResourcesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search bhajans, prayers, documents..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-[15px] focus:outline-none focus:ring-2 focus:ring-saffron-300"
               style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
             />
           </div>
         </form>
       </div>
 
-      {/* Category filters — horizontal scroll on mobile */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+      {/* Category filters — wrap on mobile instead of horizontal scroll */}
+      <div className="flex items-center gap-2 flex-wrap">
         {categories.map((cat) => (
           <button
             key={cat.key}
             onClick={() => { setActiveCategory(cat.key); setSearchQuery(''); }}
             className={cn(
-              'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-colors',
+              'flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
               activeCategory === cat.key
                 ? 'bg-saffron-500 text-white'
                 : 'bg-white border hover:bg-cream-50'
@@ -197,7 +197,7 @@ export default function ResourcesPage() {
               <div className="flex items-start justify-between gap-2 mb-2">
                 <span
                   className={cn(
-                    'inline-block px-2 py-0.5 rounded-full text-[10px] font-medium capitalize',
+                    'inline-block px-2.5 py-1 rounded-full text-[12px] font-medium capitalize',
                     categoryColors[resource.category] ?? 'bg-gray-100 text-gray-600'
                   )}
                 >
@@ -222,21 +222,21 @@ export default function ResourcesPage() {
               </div>
 
               <h3
-                className="text-[14px] font-medium mb-1 group-hover:text-[#E8860C] transition-colors"
+                className="text-[16px] font-semibold mb-1 group-hover:text-[#E8860C] transition-colors leading-snug"
                 style={{ color: '#2C1810' }}
               >
                 {resource.title}
               </h3>
 
               {resource.deity && (
-                <p className="text-[11px] mb-1" style={{ color: '#E8860C' }}>
+                <p className="text-[13px] mb-1" style={{ color: '#E8860C' }}>
                   {resource.deity}
                 </p>
               )}
 
               {resource.content && (
                 <p
-                  className="text-[12px] line-clamp-2 mb-3"
+                  className="text-[14px] line-clamp-2 mb-3 leading-relaxed"
                   style={{ color: '#7A6B5F' }}
                 >
                   {resource.content.slice(0, 120)}
@@ -244,20 +244,20 @@ export default function ResourcesPage() {
                 </p>
               )}
 
-              <div className="flex items-center gap-3 text-[11px]" style={{ color: '#A89888' }}>
+              <div className="flex items-center gap-3 text-[13px]" style={{ color: '#A89888' }}>
                 <span className="flex items-center gap-1">
-                  <Eye size={12} />
+                  <Eye size={14} />
                   {resource.view_count}
                 </span>
                 {resource.file_url && (
                   <span className="flex items-center gap-1">
-                    <FileText size={12} />
+                    <FileText size={14} />
                     PDF
                   </span>
                 )}
                 {resource.audio_url && (
                   <span className="flex items-center gap-1">
-                    <Headphones size={12} />
+                    <Headphones size={14} />
                     Audio
                   </span>
                 )}
@@ -265,11 +265,11 @@ export default function ResourcesPage() {
 
               {/* Keywords */}
               {resource.keywords && resource.keywords.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
+                <div className="flex flex-wrap gap-1.5 mt-2.5">
                   {resource.keywords.slice(0, 4).map((kw) => (
                     <span
                       key={kw}
-                      className="text-[10px] px-1.5 py-0.5 rounded bg-cream-100"
+                      className="text-[12px] px-2 py-0.5 rounded bg-cream-100"
                       style={{ color: '#7A6B5F' }}
                     >
                       {kw}

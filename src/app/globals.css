@@ -234,12 +234,26 @@
 /* ─── Live Ticker Scroll ─── */
 .ticker-scroll {
   display: inline-block;
-  animation: ticker-slide 20s linear infinite;
+  animation: ticker-slide 12s linear infinite;
+}
+
+.ticker-scroll:hover {
+  animation-play-state: paused;
 }
 
 @keyframes ticker-slide {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+
+/* Live badge glow pulse */
+@keyframes badge-glow {
+  0%, 100% { box-shadow: 0 0 4px rgba(232, 134, 12, 0.4); }
+  50%      { box-shadow: 0 0 12px rgba(232, 134, 12, 0.8), 0 0 20px rgba(232, 134, 12, 0.3); }
+}
+
+.live-badge-glow {
+  animation: badge-glow 2s ease-in-out infinite;
 }
 
 /* Tiptap editor placeholder */
