@@ -47,9 +47,7 @@ export default function IconRail({ userRole }: IconRailProps) {
     <aside className="hidden md:flex lg:hidden fixed top-0 left-0 z-30 h-full w-[64px] bg-white border-r border-[rgba(107,29,42,0.1)] flex-col items-center py-3 gap-1">
       {/* Logo — gradient circle */}
       <Link href="/" className="mb-3">
-        <div className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-[#E8860C] to-[#6B1D2A] flex items-center justify-center text-white font-heading text-base font-semibold">
-          S
-        </div>
+        <img src="/sss-logo.webp" alt="SSSGC Logo" className="w-[38px] h-[38px] rounded-full object-cover" />
       </Link>
 
       {/* Main nav */}

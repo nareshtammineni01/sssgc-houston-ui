@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description:
     'A spiritual community in Katy, TX inspired by the teachings of Sri Sathya Sai Baba. Devotion, Educare, Seva — open to all.',
   metadataBase: new URL('https://sssgc-houston.org'),
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',

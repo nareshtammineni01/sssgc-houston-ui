@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { formatDate, formatTime } from '@/lib/utils';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Heart,
   GraduationCap,
@@ -45,26 +46,58 @@ export default async function HomePage() {
 
   return (
     <div className="page-enter space-y-5">
-      {/* ===== HERO — matches mockup ===== */}
+      {/* ===== HERO — with blended Sai Baba image ===== */}
       <section
-        className="relative rounded-xl overflow-hidden p-7 md:p-8"
+        className="relative rounded-xl overflow-hidden min-h-[280px] md:min-h-[320px]"
         style={{
           background: 'linear-gradient(135deg, #4A1219 0%, #6B1D2A 60%, #E8860C 140%)',
         }}
       >
-        {/* Decorative glow */}
+        {/* Sai Baba image — right side, blended (desktop) */}
+        <div className="absolute inset-y-0 right-0 w-[55%] hidden md:block">
+          <Image
+            src="/sai-baba.jpeg"
+            alt="Sri Sathya Sai Baba"
+            fill
+            className="object-contain object-right sai-mask"
+            style={{ mixBlendMode: 'lighten' }}
+            priority
+          />
+        </div>
+
+        {/* Sai Baba image — subtle background on mobile */}
+        <div className="absolute inset-0 md:hidden opacity-20">
+          <Image
+            src="/sai-baba.jpeg"
+            alt="Sri Sathya Sai Baba"
+            fill
+            className="object-cover object-top"
+            priority
+          />
+        </div>
+
+        {/* Decorative glow behind image */}
         <div
-          className="absolute -top-[60px] -right-[40px] w-[200px] h-[200px] rounded-full"
-          style={{ background: 'rgba(232,134,12,0.1)' }}
+          className="absolute right-10 top-1/2 -translate-y-1/2 w-72 h-72 rounded-full hidden md:block"
+          style={{ background: 'rgba(232,134,12,0.15)', filter: 'blur(60px)' }}
         />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        {/* Gradient overlay to keep text readable */}
+        <div
+          className="absolute inset-0 z-[1]"
+          style={{
+            background: 'linear-gradient(to right, #4A1219 0%, rgba(74,18,25,0.85) 40%, transparent 75%)',
+          }}
+        />
+
+        {/* Text content */}
+        <div className="relative z-10 p-7 md:p-10 flex flex-col justify-center h-full">
           <div className="max-w-[480px]">
-            <p className="text-[13px] mb-1" style={{ color: '#F0DEB4' }}>
+            <p className="text-[13px] mb-2" style={{ color: '#F0DEB4' }}>
               Om Sri Sai Ram
             </p>
             <h1
-              className="text-[22px] md:text-[28px] leading-[1.25] mb-1.5"
+              className="text-[24px] md:text-[32px] leading-[1.2] mb-2"
               style={{
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
                 fontWeight: 500,
@@ -73,14 +106,14 @@ export default async function HomePage() {
             >
               Welcome to Sri Sathya Sai Center at Houston
             </h1>
-            <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.65)' }}>
+            <p className="text-[14px] leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.7)' }}>
               A spiritual community inspired by the teachings of Sri Sathya Sai Baba.
               Join us for devotion, education, and selfless service.
             </p>
-          </div>
-          <div className="flex gap-2.5 flex-shrink-0">
-            <Link href="/login" className="btn-primary">Join us</Link>
-            <Link href="/about" className="btn-secondary">Learn more</Link>
+            <div className="flex gap-3">
+              <Link href="/login" className="btn-primary">Join us</Link>
+              <Link href="/about" className="btn-secondary">Learn more</Link>
+            </div>
           </div>
         </div>
       </section>

@@ -87,9 +87,7 @@ export default function Sidebar({ isOpen, onClose, userRole, userName }: Sidebar
         {/* Logo — gradient circle + text */}
         <div className="flex items-center gap-2.5 px-4 py-4 border-b border-[rgba(107,29,42,0.1)]">
           <Link href="/" className="flex items-center gap-2.5" onClick={onClose}>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E8860C] to-[#6B1D2A] flex items-center justify-center text-white font-heading text-lg font-semibold">
-              S
-            </div>
+            <img src="/sss-logo.webp" alt="SSSGC Logo" className="w-9 h-9 rounded-full object-cover" />
             <div>
               <div className="font-heading text-sm font-semibold text-[#6B1D2A] leading-tight">
                 SSSGC Houston

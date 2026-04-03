@@ -256,6 +256,12 @@
   animation: badge-glow 2s ease-in-out infinite;
 }
 
+/* Hero Sai Baba image blend mask — fades left edge into gradient */
+.sai-mask {
+  -webkit-mask-image: linear-gradient(to left, black 50%, transparent 100%);
+  mask-image: linear-gradient(to left, black 50%, transparent 100%);
+}
+
 /* Tiptap editor placeholder */
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
