@@ -262,6 +262,17 @@
   mask-image: linear-gradient(to left, black 50%, transparent 100%);
 }
 
+/* Divine glow pulse behind Sai Baba image */
+@keyframes divine-glow {
+  0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+}
+
+.sai-glow {
+  animation: divine-glow 4s ease-in-out infinite;
+  transform-origin: center;
+}
+
 /* Tiptap editor placeholder */
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);

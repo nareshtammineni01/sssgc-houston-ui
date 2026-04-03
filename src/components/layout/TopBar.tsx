@@ -130,7 +130,7 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
         {/* Mobile logo */}
         <Link href="/" className="md:hidden flex items-center gap-1.5">
           <img src="/sss-logo.webp" alt="SSSGC Logo" className="w-7 h-7 rounded-full object-cover" />
-          <span className="text-sm font-heading font-semibold text-[#6B1D2A]">SSSGC</span>
+          <span className="text-sm font-heading font-semibold text-[#6B1D2A]">SSSGC Houston</span>
         </Link>
 
         {/* Desktop search bar */}

@@ -76,10 +76,15 @@ export default async function HomePage() {
           />
         </div>
 
-        {/* Decorative glow behind image */}
+        {/* Animated divine glow behind image */}
         <div
-          className="absolute right-10 top-1/2 -translate-y-1/2 w-72 h-72 rounded-full hidden md:block"
-          style={{ background: 'rgba(232,134,12,0.15)', filter: 'blur(60px)' }}
+          className="absolute right-12 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full hidden md:block sai-glow"
+          style={{ background: 'rgba(232,134,12,0.35)', filter: 'blur(60px)' }}
+        />
+        {/* Second inner glow - brighter core */}
+        <div
+          className="absolute right-24 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full hidden md:block sai-glow"
+          style={{ background: 'rgba(240,222,180,0.25)', filter: 'blur(40px)', animationDelay: '1s' }}
         />
 
         {/* Gradient overlay to keep text readable */}
