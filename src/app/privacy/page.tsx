@@ -11,7 +11,7 @@ export default async function PrivacyPage() {
     .from('site_content')
     .select('title, body')
     .eq('page_key', 'privacy')
-    .single() as { data: { title: string; body: string } | null };
+    .single();
 
   return (
     <div className="page-enter max-w-3xl mx-auto">
