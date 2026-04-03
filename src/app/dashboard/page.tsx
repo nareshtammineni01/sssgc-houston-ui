@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { UserCircle, Calendar, BookOpen, Heart } from 'lucide-react';
+import Link from 'next/link';
+import { UserCircle, Calendar, BookOpen, Heart, Users, Clock } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Dashboard',
@@ -18,6 +19,29 @@ export default async function DashboardPage() {
     .select('*')
     .eq('id', user.id)
     .single();
+
+  // Real stats
+  const now = new Date().toISOString();
+
+  const [eventsRes, favoritesRes, sevaRes] = await Promise.all([
+    supabase
+      .from('event_signups')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id),
+    supabase
+      .from('favorites')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id),
+    supabase
+      .from('volunteer_hours')
+      .select('hours')
+      .eq('user_id', user.id)
+      .eq('status', 'approved'),
+  ]);
+
+  const upcomingEvents = eventsRes.count ?? 0;
+  const savedResources = favoritesRes.count ?? 0;
+  const sevaHours = (sevaRes.data ?? []).reduce((sum, r) => sum + r.hours, 0);
 
   return (
     <div className="page-enter space-y-6">
@@ -41,33 +65,43 @@ export default async function DashboardPage() {
 
       {/* Quick stats / actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card p-5 flex items-center gap-4">
+        <Link href="/calendar" className="card p-5 flex items-center gap-4 hover:border-[#E8860C] transition-colors">
           <div className="w-12 h-12 bg-saffron-50 rounded-xl flex items-center justify-center">
             <Calendar size={24} className="text-saffron-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">0</p>
-            <p className="text-xs text-gray-500">Upcoming Events</p>
+            <p className="text-2xl font-bold text-gray-900">{upcomingEvents}</p>
+            <p className="text-xs text-gray-500">Event RSVPs</p>
           </div>
-        </div>
-        <div className="card p-5 flex items-center gap-4">
+        </Link>
+        <Link href="/resources" className="card p-5 flex items-center gap-4 hover:border-[#E8860C] transition-colors">
           <div className="w-12 h-12 bg-maroon-50 rounded-xl flex items-center justify-center">
             <BookOpen size={24} className="text-maroon-600" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">0</p>
+            <p className="text-2xl font-bold text-gray-900">{savedResources}</p>
             <p className="text-xs text-gray-500">Saved Resources</p>
           </div>
-        </div>
-        <div className="card p-5 flex items-center gap-4">
+        </Link>
+        <Link href="/dashboard/seva-hours" className="card p-5 flex items-center gap-4 hover:border-[#E8860C] transition-colors">
           <div className="w-12 h-12 bg-gold-50 rounded-xl flex items-center justify-center">
             <Heart size={24} className="text-gold-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-gray-900">0</p>
+            <p className="text-2xl font-bold text-gray-900">{sevaHours}</p>
             <p className="text-xs text-gray-500">Seva Hours</p>
           </div>
-        </div>
+        </Link>
+      </div>
+
+      {/* Quick links */}
+      <div className="flex gap-3">
+        <Link href="/dashboard/directory" className="card px-4 py-3 flex items-center gap-2 text-sm hover:border-[#E8860C] transition-colors" style={{ color: '#7A6B5F' }}>
+          <Users size={16} /> Member Directory
+        </Link>
+        <Link href="/dashboard/seva-hours" className="card px-4 py-3 flex items-center gap-2 text-sm hover:border-[#E8860C] transition-colors" style={{ color: '#7A6B5F' }}>
+          <Clock size={16} /> Log Seva Hours
+        </Link>
       </div>
 
       {/* Profile details */}

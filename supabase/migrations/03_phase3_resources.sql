@@ -18,20 +18,19 @@ CREATE TABLE resources (
   audio_url TEXT,                          -- Audio embed URL
   author_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   view_count INTEGER DEFAULT 0,
+  fts TSVECTOR GENERATED ALWAYS AS (
+    to_tsvector('english',
+      COALESCE(title, '') || ' ' ||
+      COALESCE(content, '') || ' ' ||
+      COALESCE(deity, '')
+    )
+  ) STORED,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Full-text search GIN index
-CREATE INDEX idx_resources_search ON resources
-  USING GIN (
-    to_tsvector('english',
-      COALESCE(title, '') || ' ' ||
-      COALESCE(content, '') || ' ' ||
-      COALESCE(array_to_string(keywords, ' '), '') || ' ' ||
-      COALESCE(deity, '')
-    )
-  );
+-- Full-text search GIN index on generated column
+CREATE INDEX idx_resources_search ON resources USING GIN (fts);
 
 CREATE INDEX idx_resources_category ON resources(category);
 CREATE INDEX idx_resources_deity ON resources(deity) WHERE deity IS NOT NULL;
@@ -83,21 +82,8 @@ BEGIN
   RETURN QUERY
   SELECT *
   FROM resources
-  WHERE to_tsvector('english',
-    COALESCE(title, '') || ' ' ||
-    COALESCE(content, '') || ' ' ||
-    COALESCE(array_to_string(keywords, ' '), '') || ' ' ||
-    COALESCE(deity, '')
-  ) @@ plainto_tsquery('english', search_query)
-  ORDER BY ts_rank(
-    to_tsvector('english',
-      COALESCE(title, '') || ' ' ||
-      COALESCE(content, '') || ' ' ||
-      COALESCE(array_to_string(keywords, ' '), '') || ' ' ||
-      COALESCE(deity, '')
-    ),
-    plainto_tsquery('english', search_query)
-  ) DESC;
+  WHERE fts @@ plainto_tsquery('english', search_query)
+  ORDER BY ts_rank(fts, plainto_tsquery('english', search_query)) DESC;
 END;
 $$ LANGUAGE plpgsql STABLE;
 

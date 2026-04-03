@@ -2,26 +2,62 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { Search, BookOpen, Music, FileText, Filter } from 'lucide-react';
-import { cn, truncate } from '@/lib/utils';
+import {
+  Search,
+  BookOpen,
+  Music,
+  FileText,
+  Heart,
+  Eye,
+  ExternalLink,
+  Headphones,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { Resource } from '@/types/database';
 
 const categories = [
   { key: 'all', label: 'All', icon: BookOpen },
   { key: 'bhajan', label: 'Bhajans', icon: Music },
-  { key: 'veda', label: 'Vedam', icon: BookOpen },
-  { key: 'study', label: 'Study', icon: FileText },
-  { key: 'newsletter', label: 'Newsletter', icon: FileText },
+  { key: 'prayer', label: 'Prayers', icon: BookOpen },
+  { key: 'study_circle', label: 'Study Circle', icon: FileText },
   { key: 'document', label: 'Documents', icon: FileText },
+  { key: 'bhajan_resource', label: 'Bhajan Resources', icon: Headphones },
 ];
+
+const categoryColors: Record<string, string> = {
+  bhajan: 'bg-saffron-50 text-saffron-600',
+  prayer: 'bg-maroon-50 text-maroon-600',
+  study_circle: 'bg-blue-50 text-blue-600',
+  document: 'bg-gray-100 text-gray-600',
+  bhajan_resource: 'bg-gold-50 text-gold-600',
+};
 
 export default function ResourcesPage() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [userId, setUserId] = useState<string | null>(null);
 
   const supabase = createClient();
+
+  // Get current user + favorites on mount
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        const { data: favs } = await supabase
+          .from('favorites')
+          .select('resource_id')
+          .eq('user_id', user.id);
+        if (favs) {
+          setFavorites(new Set(favs.map((f: { resource_id: string }) => f.resource_id)));
+        }
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     fetchResources();
@@ -54,15 +90,34 @@ export default function ResourcesPage() {
     const { data } = await supabase.rpc('search_resources', {
       search_query: searchQuery,
     });
-    // search_resources returns a different shape, map it
-    if (data) {
-      const { data: fullResources } = await supabase
-        .from('resources')
-        .select('*')
-        .in('id', data.map((r: { id: string }) => r.id));
-      setResources(fullResources ?? []);
-    }
+    setResources(data ?? []);
     setLoading(false);
+  }
+
+  async function toggleFavorite(resourceId: string) {
+    if (!userId) return;
+
+    if (favorites.has(resourceId)) {
+      setFavorites((prev) => {
+        const next = new Set(prev);
+        next.delete(resourceId);
+        return next;
+      });
+      await supabase
+        .from('favorites')
+        .delete()
+        .eq('user_id', userId)
+        .eq('resource_id', resourceId);
+    } else {
+      setFavorites((prev) => new Set(prev).add(resourceId));
+      await supabase
+        .from('favorites')
+        .insert({ user_id: userId, resource_id: resourceId });
+    }
+  }
+
+  async function trackView(resourceId: string) {
+    await supabase.rpc('increment_view_count', { resource_id: resourceId });
   }
 
   return (
@@ -78,8 +133,9 @@ export default function ResourcesPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search bhajans, documents..."
-              className="input pl-10"
+              placeholder="Search bhajans, prayers, documents..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
+              style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
             />
           </div>
         </form>
@@ -95,8 +151,13 @@ export default function ResourcesPage() {
               'flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
               activeCategory === cat.key
                 ? 'bg-saffron-500 text-white'
-                : 'bg-white text-gray-600 hover:bg-cream-200 border border-gray-200'
+                : 'bg-white border hover:bg-cream-50'
             )}
+            style={
+              activeCategory !== cat.key
+                ? { borderColor: 'rgba(107,29,42,0.12)', color: '#7A6B5F' }
+                : {}
+            }
           >
             <cat.icon size={16} />
             {cat.label}
@@ -118,25 +179,112 @@ export default function ResourcesPage() {
       ) : resources.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {resources.map((resource) => (
-            <div key={resource.id} className="card p-5">
-              <span className="badge-saffron text-[10px] mb-2">{resource.category}</span>
-              <h3 className="font-medium text-gray-900 mb-1">{resource.title}</h3>
-              {resource.description && (
-                <p className="text-sm text-gray-500 mb-3">
-                  {truncate(resource.description, 100)}
+            <div
+              key={resource.id}
+              className="card p-5 group hover:border-[#E8860C] transition-colors"
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <span
+                  className={cn(
+                    'inline-block px-2 py-0.5 rounded-full text-[10px] font-medium capitalize',
+                    categoryColors[resource.category] ?? 'bg-gray-100 text-gray-600'
+                  )}
+                >
+                  {resource.category.replace('_', ' ')}
+                </span>
+                {userId && (
+                  <button
+                    onClick={() => toggleFavorite(resource.id)}
+                    className="p-1 rounded-lg hover:bg-cream-100 transition-colors"
+                    title={favorites.has(resource.id) ? 'Remove from favorites' : 'Add to favorites'}
+                  >
+                    <Heart
+                      size={16}
+                      className={
+                        favorites.has(resource.id)
+                          ? 'fill-red-500 text-red-500'
+                          : 'text-gray-300'
+                      }
+                    />
+                  </button>
+                )}
+              </div>
+
+              <h3
+                className="text-[14px] font-medium mb-1"
+                style={{ color: '#2C1810' }}
+              >
+                {resource.title}
+              </h3>
+
+              {resource.deity && (
+                <p className="text-[11px] mb-1" style={{ color: '#E8860C' }}>
+                  {resource.deity}
                 </p>
               )}
-              <div className="flex items-center gap-3 text-xs text-gray-400">
-                {resource.language && <span>{resource.language}</span>}
-                <span>{resource.view_count} views</span>
+
+              {resource.content && (
+                <p
+                  className="text-[12px] line-clamp-2 mb-3"
+                  style={{ color: '#7A6B5F' }}
+                >
+                  {resource.content.slice(0, 120)}
+                  {resource.content.length > 120 ? '...' : ''}
+                </p>
+              )}
+
+              <div className="flex items-center gap-3 text-[11px]" style={{ color: '#A89888' }}>
+                <span className="flex items-center gap-1">
+                  <Eye size={12} />
+                  {resource.view_count}
+                </span>
+                {resource.file_url && (
+                  <a
+                    href={resource.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => trackView(resource.id)}
+                    className="flex items-center gap-1 hover:text-saffron-500 transition-colors"
+                  >
+                    <FileText size={12} />
+                    PDF
+                  </a>
+                )}
+                {resource.audio_url && (
+                  <a
+                    href={resource.audio_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => trackView(resource.id)}
+                    className="flex items-center gap-1 hover:text-saffron-500 transition-colors"
+                  >
+                    <Headphones size={12} />
+                    Audio
+                  </a>
+                )}
               </div>
+
+              {/* Keywords */}
+              {resource.keywords && resource.keywords.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {resource.keywords.slice(0, 4).map((kw) => (
+                    <span
+                      key={kw}
+                      className="text-[10px] px-1.5 py-0.5 rounded bg-cream-100"
+                      style={{ color: '#7A6B5F' }}
+                    >
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
       ) : (
         <div className="card p-12 text-center">
-          <BookOpen size={40} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">No resources found. Try a different search or category.</p>
+          <BookOpen size={40} className="mx-auto mb-4" style={{ color: '#A89888' }} />
+          <p style={{ color: '#7A6B5F' }}>No resources found. Try a different search or category.</p>
         </div>
       )}
     </div>

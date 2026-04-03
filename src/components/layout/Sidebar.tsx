@@ -26,7 +26,7 @@ const mainNav = [
   { label: 'Devotion', href: '/devotion', icon: Heart },
   { label: 'Educare', href: '/educare', icon: GraduationCap },
   { label: 'Seva', href: '/seva', icon: HandHeart },
-  { label: 'Resources', href: '/resources', icon: BookOpen, badge: '722' },
+  { label: 'Resources', href: '/resources', icon: BookOpen },
   { label: 'Calendar', href: '/calendar', icon: Calendar },
   { label: 'Announcements', href: '/announcements', icon: Megaphone },
   { label: 'Settings', href: '/settings', icon: Settings },

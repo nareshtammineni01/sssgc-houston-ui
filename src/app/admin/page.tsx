@@ -77,6 +77,23 @@ export default async function AdminPage() {
     redirect('/dashboard');
   }
 
+  // Fetch real counts
+  const [membersRes, familiesRes, eventsRes, resourcesRes, announcementsRes] = await Promise.all([
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+    supabase.from('families').select('id', { count: 'exact', head: true }),
+    supabase.from('events').select('id', { count: 'exact', head: true }),
+    supabase.from('resources').select('id', { count: 'exact', head: true }),
+    supabase.from('announcements').select('id', { count: 'exact', head: true }),
+  ]);
+
+  const stats = [
+    { label: 'Members', value: membersRes.count ?? 0, icon: Users },
+    { label: 'Families', value: familiesRes.count ?? 0, icon: Users },
+    { label: 'Events', value: eventsRes.count ?? 0, icon: Calendar },
+    { label: 'Resources', value: resourcesRes.count ?? 0, icon: BookOpen },
+    { label: 'Announcements', value: announcementsRes.count ?? 0, icon: Megaphone },
+  ];
+
   return (
     <div className="page-enter space-y-6">
       <div className="flex items-center justify-between">
@@ -85,13 +102,8 @@ export default async function AdminPage() {
       </div>
 
       {/* Quick stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Members', value: '—', icon: Users },
-          { label: 'Events', value: '—', icon: Calendar },
-          { label: 'Resources', value: '—', icon: BookOpen },
-          { label: 'Announcements', value: '—', icon: Megaphone },
-        ].map((stat) => (
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        {stats.map((stat) => (
           <div key={stat.label} className="card p-4 flex items-center gap-3">
             <stat.icon size={20} className="text-gray-400" />
             <div>

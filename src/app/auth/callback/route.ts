@@ -10,10 +10,12 @@ export async function GET(request: Request) {
     const supabase = createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // For Google OAuth users, check if profile needs address info
+      // They'll be prompted in settings if fields are missing
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
 
-  // Return the user to an error page or login
+  // Return the user to login with an error
   return NextResponse.redirect(`${origin}/login?error=auth`);
 }
