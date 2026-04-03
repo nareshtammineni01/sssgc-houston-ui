@@ -74,7 +74,7 @@ export default function SignUpPage() {
           state: form.state || null,
           zip: form.zip.trim() || null,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirect)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
 
