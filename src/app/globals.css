@@ -273,6 +273,66 @@
   transform-origin: center;
 }
 
+/* Logo loading — ripple rings effect */
+@keyframes logo-shine {
+  0%, 100% { box-shadow: 0 0 8px rgba(232,134,12,0.4); }
+  50%      { box-shadow: 0 0 20px rgba(232,134,12,0.7), 0 0 40px rgba(240,222,180,0.25); }
+}
+
+@keyframes ripple-maroon {
+  0%   { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes ripple-orange {
+  0%   { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes ripple-gold {
+  0%   { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+.logo-loader {
+  animation: logo-shine 2s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+}
+
+.logo-ripple-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-ripple-wrap::before,
+.logo-ripple-wrap::after,
+.logo-ripple-wrap .ripple-ring {
+  content: '';
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.logo-ripple-wrap::before {
+  border: 2px solid #6B1D2A;
+  animation: ripple-maroon 2s ease-out infinite;
+}
+
+.logo-ripple-wrap::after {
+  border: 2px solid #E8860C;
+  animation: ripple-orange 2s ease-out infinite 0.5s;
+}
+
+.logo-ripple-wrap .ripple-ring {
+  border: 2px solid #C4922A;
+  animation: ripple-gold 2s ease-out infinite 1s;
+}
+
 /* Tiptap editor placeholder */
 .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);

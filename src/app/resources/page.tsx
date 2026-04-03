@@ -194,10 +194,10 @@ export default function ResourcesPage() {
               href={`/resources/${resource.id}`}
               className="card p-5 group hover:border-[#E8860C] transition-colors cursor-pointer block"
             >
-              <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="flex items-start justify-between gap-2 mb-3">
                 <span
                   className={cn(
-                    'inline-block px-2.5 py-1 rounded-full text-[12px] font-medium capitalize',
+                    'inline-block px-3 py-1 rounded-full text-[13px] font-medium capitalize',
                     categoryColors[resource.category] ?? 'bg-gray-100 text-gray-600'
                   )}
                 >
@@ -222,21 +222,21 @@ export default function ResourcesPage() {
               </div>
 
               <h3
-                className="text-[16px] font-semibold mb-1 group-hover:text-[#E8860C] transition-colors leading-snug"
+                className="text-[18px] font-semibold mb-1.5 group-hover:text-[#E8860C] transition-colors leading-snug"
                 style={{ color: '#2C1810' }}
               >
                 {resource.title}
               </h3>
 
               {resource.deity && (
-                <p className="text-[13px] mb-1" style={{ color: '#E8860C' }}>
+                <p className="text-[15px] mb-1.5" style={{ color: '#E8860C' }}>
                   {resource.deity}
                 </p>
               )}
 
               {resource.content && (
                 <p
-                  className="text-[14px] line-clamp-2 mb-3 leading-relaxed"
+                  className="text-[16px] line-clamp-2 mb-3 leading-relaxed"
                   style={{ color: '#7A6B5F' }}
                 >
                   {resource.content.slice(0, 120)}
@@ -244,20 +244,20 @@ export default function ResourcesPage() {
                 </p>
               )}
 
-              <div className="flex items-center gap-3 text-[13px]" style={{ color: '#A89888' }}>
-                <span className="flex items-center gap-1">
-                  <Eye size={14} />
+              <div className="flex items-center gap-3 text-[15px]" style={{ color: '#A89888' }}>
+                <span className="flex items-center gap-1.5">
+                  <Eye size={16} />
                   {resource.view_count}
                 </span>
                 {resource.file_url && (
-                  <span className="flex items-center gap-1">
-                    <FileText size={14} />
+                  <span className="flex items-center gap-1.5">
+                    <FileText size={16} />
                     PDF
                   </span>
                 )}
                 {resource.audio_url && (
-                  <span className="flex items-center gap-1">
-                    <Headphones size={14} />
+                  <span className="flex items-center gap-1.5">
+                    <Headphones size={16} />
                     Audio
                   </span>
                 )}
@@ -265,11 +265,11 @@ export default function ResourcesPage() {
 
               {/* Keywords */}
               {resource.keywords && resource.keywords.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-2.5">
+                <div className="flex flex-wrap gap-2 mt-3">
                   {resource.keywords.slice(0, 4).map((kw) => (
                     <span
                       key={kw}
-                      className="text-[12px] px-2 py-0.5 rounded bg-cream-100"
+                      className="text-[13px] px-2.5 py-1 rounded bg-cream-100"
                       style={{ color: '#7A6B5F' }}
                     >
                       {kw}

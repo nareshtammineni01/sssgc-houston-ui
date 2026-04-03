@@ -64,21 +64,21 @@ export default async function ResourceDetailPage({
       <div>
         <div className="flex items-center gap-2 mb-3">
           <span
-            className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-medium ${
+            className={`inline-block px-3 py-1 rounded-full text-[14px] font-medium ${
               categoryColors[resource.category] ?? 'bg-gray-100 text-gray-600'
             }`}
           >
             {categoryLabels[resource.category] ?? resource.category}
           </span>
           {resource.deity && (
-            <span className="text-[12px] font-medium" style={{ color: '#E8860C' }}>
+            <span className="text-[15px] font-medium" style={{ color: '#E8860C' }}>
               {resource.deity}
             </span>
           )}
         </div>
 
         <h1
-          className="text-[22px] md:text-[26px] leading-tight mb-2"
+          className="text-[26px] md:text-[30px] leading-tight mb-3"
           style={{
             fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontWeight: 600,
@@ -88,17 +88,17 @@ export default async function ResourceDetailPage({
           {resource.title}
         </h1>
 
-        <div className="flex items-center gap-4 text-[12px]" style={{ color: '#A89888' }}>
-          <span className="flex items-center gap-1">
-            <Eye size={13} />
+        <div className="flex items-center gap-4 text-[14px]" style={{ color: '#A89888' }}>
+          <span className="flex items-center gap-1.5">
+            <Eye size={16} />
             {resource.view_count} views
           </span>
           {resource.keywords && resource.keywords.length > 0 && (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               {resource.keywords.map((kw: string) => (
                 <span
                   key={kw}
-                  className="px-2 py-0.5 rounded-full text-[10px] bg-cream-100"
+                  className="px-2.5 py-1 rounded-full text-[13px] bg-cream-100"
                   style={{ color: '#7A6B5F' }}
                 >
                   {kw}
@@ -148,7 +148,7 @@ export default async function ResourceDetailPage({
           style={{ borderColor: 'rgba(107,29,42,0.1)' }}
         >
           <div
-            className="whitespace-pre-wrap text-[14px] leading-relaxed"
+            className="whitespace-pre-wrap text-[19px] leading-[1.8]"
             style={{ color: '#2C1810' }}
           >
             {resource.content}

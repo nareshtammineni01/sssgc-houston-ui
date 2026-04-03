@@ -12,7 +12,7 @@ import {
   GraduationCap,
   HandHeart,
   UserCircle,
-  Settings,
+  UserCog,
   Shield,
   HelpCircle,
   Mail,
@@ -29,7 +29,7 @@ const mainNav = [
   { label: 'Resources', href: '/resources', icon: BookOpen },
   { label: 'Calendar', href: '/calendar', icon: Calendar },
   { label: 'Announcements', href: '/announcements', icon: Megaphone },
-  { label: 'Settings', href: '/settings', icon: Settings },
+  { label: 'Profile', href: '/profile', icon: UserCog },
 ];
 
 const moreNav = [
