@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import Link from 'next/link';
 import {
   Search,
   BookOpen,
@@ -9,8 +11,8 @@ import {
   FileText,
   Heart,
   Eye,
-  ExternalLink,
   Headphones,
+  ArrowLeft,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Resource } from '@/types/database';
@@ -33,8 +35,11 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function ResourcesPage() {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') ?? '';
+
   const [resources, setResources] = useState<Resource[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -59,8 +64,13 @@ export default function ResourcesPage() {
     })();
   }, []);
 
+  // Fetch on category change or initial query
   useEffect(() => {
-    fetchResources();
+    if (initialQuery) {
+      doSearch(initialQuery);
+    } else {
+      fetchResources();
+    }
   }, [activeCategory]);
 
   async function fetchResources() {
@@ -80,18 +90,22 @@ export default function ResourcesPage() {
     setLoading(false);
   }
 
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (!searchQuery.trim()) {
+  async function doSearch(q: string) {
+    if (!q.trim()) {
       fetchResources();
       return;
     }
     setLoading(true);
     const { data } = await supabase.rpc('search_resources', {
-      search_query: searchQuery,
+      search_query: q,
     });
     setResources(data ?? []);
     setLoading(false);
+  }
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    doSearch(searchQuery);
   }
 
   async function toggleFavorite(resourceId: string) {
@@ -116,18 +130,14 @@ export default function ResourcesPage() {
     }
   }
 
-  async function trackView(resourceId: string) {
-    await supabase.rpc('increment_view_count', { resource_id: resourceId });
-  }
-
   return (
-    <div className="page-enter space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="page-enter space-y-5">
+      <div className="flex flex-col gap-4">
         <h1 className="text-h1">Resources</h1>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-72">
+        <form onSubmit={handleSearch} className="flex items-center gap-2 w-full">
+          <div className="relative flex-1 max-w-md">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -141,14 +151,14 @@ export default function ResourcesPage() {
         </form>
       </div>
 
-      {/* Category filters */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+      {/* Category filters — horizontal scroll on mobile */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
         {categories.map((cat) => (
           <button
             key={cat.key}
-            onClick={() => setActiveCategory(cat.key)}
+            onClick={() => { setActiveCategory(cat.key); setSearchQuery(''); }}
             className={cn(
-              'flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
+              'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-colors',
               activeCategory === cat.key
                 ? 'bg-saffron-500 text-white'
                 : 'bg-white border hover:bg-cream-50'
@@ -159,7 +169,7 @@ export default function ResourcesPage() {
                 : {}
             }
           >
-            <cat.icon size={16} />
+            <cat.icon size={14} />
             {cat.label}
           </button>
         ))}
@@ -179,9 +189,10 @@ export default function ResourcesPage() {
       ) : resources.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {resources.map((resource) => (
-            <div
+            <Link
               key={resource.id}
-              className="card p-5 group hover:border-[#E8860C] transition-colors"
+              href={`/resources/${resource.id}`}
+              className="card p-5 group hover:border-[#E8860C] transition-colors cursor-pointer block"
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <span
@@ -194,7 +205,7 @@ export default function ResourcesPage() {
                 </span>
                 {userId && (
                   <button
-                    onClick={() => toggleFavorite(resource.id)}
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(resource.id); }}
                     className="p-1 rounded-lg hover:bg-cream-100 transition-colors"
                     title={favorites.has(resource.id) ? 'Remove from favorites' : 'Add to favorites'}
                   >
@@ -211,7 +222,7 @@ export default function ResourcesPage() {
               </div>
 
               <h3
-                className="text-[14px] font-medium mb-1"
+                className="text-[14px] font-medium mb-1 group-hover:text-[#E8860C] transition-colors"
                 style={{ color: '#2C1810' }}
               >
                 {resource.title}
@@ -239,28 +250,16 @@ export default function ResourcesPage() {
                   {resource.view_count}
                 </span>
                 {resource.file_url && (
-                  <a
-                    href={resource.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => trackView(resource.id)}
-                    className="flex items-center gap-1 hover:text-saffron-500 transition-colors"
-                  >
+                  <span className="flex items-center gap-1">
                     <FileText size={12} />
                     PDF
-                  </a>
+                  </span>
                 )}
                 {resource.audio_url && (
-                  <a
-                    href={resource.audio_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => trackView(resource.id)}
-                    className="flex items-center gap-1 hover:text-saffron-500 transition-colors"
-                  >
+                  <span className="flex items-center gap-1">
                     <Headphones size={12} />
                     Audio
-                  </a>
+                  </span>
                 )}
               </div>
 
@@ -278,7 +277,7 @@ export default function ResourcesPage() {
                   ))}
                 </div>
               )}
-            </div>
+            </Link>
           ))}
         </div>
       ) : (

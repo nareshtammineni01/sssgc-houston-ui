@@ -79,8 +79,8 @@ export default async function HomePage() {
             </p>
           </div>
           <div className="flex gap-2.5 flex-shrink-0">
-            <button className="btn-primary">Join us</button>
-            <button className="btn-secondary">Learn more</button>
+            <Link href="/login" className="btn-primary">Join us</Link>
+            <Link href="/about" className="btn-secondary">Learn more</Link>
           </div>
         </div>
       </section>
@@ -204,7 +204,7 @@ export default async function HomePage() {
         <div className="card">
           <div className="card-header">
             <div className="card-title">Announcements</div>
-            <span className="card-link">View all</span>
+            <Link href="/announcements" className="card-link">View all</Link>
           </div>
           <div className="card-body">
             {announcements && announcements.length > 0 ? (
