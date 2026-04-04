@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Mail, ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { FloatingInput } from '@/components/ui/FloatingField';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -30,10 +31,6 @@ export default function ForgotPasswordPage() {
     setLoading(false);
   }
 
-  const inputClass =
-    'w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#E8860C]/40 transition-colors';
-  const inputStyle = { borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' };
-
   return (
     <div className="page-enter flex items-center justify-center min-h-[60vh]">
       <div className="w-full max-w-md">
@@ -50,7 +47,6 @@ export default function ForgotPasswordPage() {
           </div>
 
           {sent ? (
-            /* Success state */
             <div className="text-center py-4">
               <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(34,197,94,0.1)' }}>
                 <CheckCircle2 size={32} style={{ color: '#22c55e' }} />
@@ -82,27 +78,16 @@ export default function ForgotPasswordPage() {
               </div>
             </div>
           ) : (
-            /* Form */
             <>
               <form onSubmit={handleReset} className="space-y-4">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-1" style={{ color: '#2C1810' }}>
-                    Email Address
-                  </label>
-                  <div className="relative">
-                    <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#A89888' }} />
-                    <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className={`${inputClass} pl-9`}
-                      style={inputStyle}
-                      placeholder="you@example.com"
-                      required
-                    />
-                  </div>
-                </div>
+                <FloatingInput
+                  label="Email Address"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  icon={<Mail size={16} />}
+                  required
+                />
 
                 {error && (
                   <div className="p-3 rounded-xl text-sm bg-red-50 text-red-600 border border-red-200">{error}</div>
@@ -128,7 +113,6 @@ export default function ForgotPasswordPage() {
                 </button>
               </form>
 
-              {/* Back to login */}
               <div className="mt-5 text-center">
                 <Link href="/login" className="inline-flex items-center gap-1 text-sm font-medium" style={{ color: '#E8860C' }}>
                   <ArrowLeft size={14} />

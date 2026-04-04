@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Mail, Lock, Eye, EyeOff, UserPlus, Phone, CheckCircle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { FloatingInput, FloatingPassword } from '@/components/ui/FloatingField';
 
 export default function SignUpPage() {
   const [form, setForm] = useState({
@@ -78,13 +79,7 @@ export default function SignUpPage() {
     if (error) setError(error.message);
   }
 
-  const inputClass =
-    'w-full px-3.5 py-2.5 rounded-xl border text-[15px] focus:outline-none focus:ring-2 focus:ring-[#E8860C]/40 transition-colors';
-  const inputStyle = { borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' };
-  const labelClass = 'block text-[13px] font-medium mb-1.5';
-  const labelStyle = { color: '#7A6B5F' };
-
-  // Success state — account created
+  // Success state
   if (success) {
     return (
       <div className="page-enter flex items-center justify-center min-h-[60vh]">
@@ -152,74 +147,69 @@ export default function SignUpPage() {
             <div className="flex-1 h-px" style={{ background: 'rgba(107,29,42,0.1)' }} />
           </div>
 
-          {/* Form — minimal fields only */}
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name row */}
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelClass} style={labelStyle}>First Name *</label>
-                <input type="text" value={form.firstName} onChange={(e) => update('firstName', e.target.value)}
-                  className={inputClass} style={inputStyle} placeholder="First name" required />
-              </div>
-              <div>
-                <label className={labelClass} style={labelStyle}>Last Name *</label>
-                <input type="text" value={form.lastName} onChange={(e) => update('lastName', e.target.value)}
-                  className={inputClass} style={inputStyle} placeholder="Last name" required />
-              </div>
+              <FloatingInput
+                label="First Name *"
+                type="text"
+                value={form.firstName}
+                onChange={(e) => update('firstName', e.target.value)}
+                required
+              />
+              <FloatingInput
+                label="Last Name *"
+                type="text"
+                value={form.lastName}
+                onChange={(e) => update('lastName', e.target.value)}
+                required
+              />
             </div>
 
-            {/* Email */}
-            <div>
-              <label className={labelClass} style={labelStyle}>Email *</label>
-              <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#A89888' }} />
-                <input type="email" value={form.email} onChange={(e) => update('email', e.target.value)}
-                  className={`${inputClass} pl-10`} style={inputStyle} placeholder="you@example.com" required />
-              </div>
-            </div>
+            <FloatingInput
+              label="Email *"
+              type="email"
+              value={form.email}
+              onChange={(e) => update('email', e.target.value)}
+              icon={<Mail size={16} />}
+              required
+            />
 
-            {/* Phone */}
-            <div>
-              <label className={labelClass} style={labelStyle}>Phone Number *</label>
-              <div className="relative">
-                <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#A89888' }} />
-                <input type="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)}
-                  className={`${inputClass} pl-10`} style={inputStyle} placeholder="+1 (555) 000-0000" required />
-              </div>
-            </div>
+            <FloatingInput
+              label="Phone Number *"
+              type="tel"
+              value={form.phone}
+              onChange={(e) => update('phone', e.target.value)}
+              icon={<Phone size={16} />}
+              required
+            />
 
-            {/* Password */}
-            <div>
-              <label className={labelClass} style={labelStyle}>Password *</label>
-              <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#A89888' }} />
-                <input type={showPassword ? 'text' : 'password'} value={form.password}
-                  onChange={(e) => update('password', e.target.value)}
-                  className={`${inputClass} pl-10 pr-10`} style={inputStyle} placeholder="Min 6 characters" minLength={6} required />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: '#A89888' }}>
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
+            <FloatingPassword
+              label="Password *"
+              value={form.password}
+              onChange={(e) => update('password', e.target.value)}
+              icon={<Lock size={16} />}
+              showToggle
+              isVisible={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
+              toggleIcon={showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              minLength={6}
+              required
+            />
 
-            {/* Confirm Password */}
-            <div>
-              <label className={labelClass} style={labelStyle}>Confirm Password *</label>
-              <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#A89888' }} />
-                <input type={showPassword ? 'text' : 'password'} value={form.confirmPassword}
-                  onChange={(e) => update('confirmPassword', e.target.value)}
-                  className={`${inputClass} pl-10`} style={inputStyle} placeholder="Re-enter password" minLength={6} required />
-              </div>
-            </div>
+            <FloatingPassword
+              label="Confirm Password *"
+              value={form.confirmPassword}
+              onChange={(e) => update('confirmPassword', e.target.value)}
+              icon={<Lock size={16} />}
+              minLength={6}
+              required
+            />
 
-            {/* Errors */}
             {error && (
               <div className="p-3 rounded-xl text-[14px] bg-red-50 text-red-600 border border-red-200">{error}</div>
             )}
 
-            {/* Submit */}
             <button type="submit" disabled={loading}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-[15px] font-medium disabled:opacity-50 transition-colors"
               style={{ background: '#6B1D2A' }}>
@@ -237,12 +227,10 @@ export default function SignUpPage() {
             </button>
           </form>
 
-          {/* Hint about profile */}
           <p className="mt-4 text-center text-[12px]" style={{ color: '#A89888' }}>
             You can add your address and other details in your Profile after signing in.
           </p>
 
-          {/* Switch to login */}
           <div className="mt-4 text-center">
             <span className="text-[14px]" style={{ color: '#7A6B5F' }}>Already have an account? </span>
             <Link href="/login" className="text-[14px] font-medium" style={{ color: '#E8860C' }}>

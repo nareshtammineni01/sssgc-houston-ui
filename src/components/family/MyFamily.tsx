@@ -6,6 +6,7 @@ import {
   Users, UserPlus, Copy, CheckCircle, Pencil, Trash2, X, Baby, Heart, User, UserCheck,
   Mail, Send, Loader2,
 } from 'lucide-react';
+import { FloatingInput, FloatingSelect } from '@/components/ui/FloatingField';
 
 interface FamilyMember {
   id: string;
@@ -625,75 +626,48 @@ export default function MyFamily({ userId, familyId, familyRole, userName }: MyF
 
             {/* Name */}
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[13px] font-medium mb-1" style={{ color: '#7A6B5F' }}>First Name *</label>
-                <input type="text" value={memberForm.first_name}
-                  onChange={(e) => setMemberForm(f => ({ ...f, first_name: e.target.value }))}
-                  className={inputClass} style={inputStyle} required />
-              </div>
-              <div>
-                <label className="block text-[13px] font-medium mb-1" style={{ color: '#7A6B5F' }}>Last Name</label>
-                <input type="text" value={memberForm.last_name}
-                  onChange={(e) => setMemberForm(f => ({ ...f, last_name: e.target.value }))}
-                  className={inputClass} style={inputStyle} />
-              </div>
+              <FloatingInput label="First Name *" type="text" value={memberForm.first_name}
+                onChange={(e) => setMemberForm(f => ({ ...f, first_name: e.target.value }))} required />
+              <FloatingInput label="Last Name" type="text" value={memberForm.last_name}
+                onChange={(e) => setMemberForm(f => ({ ...f, last_name: e.target.value }))} />
             </div>
 
             {/* Relationship */}
-            <div>
-              <label className="block text-[13px] font-medium mb-1" style={{ color: '#7A6B5F' }}>Relationship *</label>
-              <select value={memberForm.relationship}
-                onChange={(e) => setMemberForm(f => ({ ...f, relationship: e.target.value }))}
-                className={inputClass} style={inputStyle}>
-                <option value="child">Child</option>
-                <option value="spouse">Spouse</option>
-                <option value="parent">Parent</option>
-                <option value="sibling">Sibling</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
+            <FloatingSelect label="Relationship *" value={memberForm.relationship}
+              onChange={(e) => setMemberForm(f => ({ ...f, relationship: e.target.value }))}>
+              <option value="child">Child</option>
+              <option value="spouse">Spouse</option>
+              <option value="parent">Parent</option>
+              <option value="sibling">Sibling</option>
+              <option value="other">Other</option>
+            </FloatingSelect>
 
             {/* Date of Birth - only for children */}
             {memberForm.relationship === 'child' && (
-              <div>
-                <label className="block text-[13px] font-medium mb-1" style={{ color: '#7A6B5F' }}>
-                  Date of Birth <span className="text-[#E8860C]">(for SSE grouping)</span>
-                </label>
-                <input type="date" value={memberForm.date_of_birth}
-                  onChange={(e) => setMemberForm(f => ({ ...f, date_of_birth: e.target.value }))}
-                  className={inputClass} style={inputStyle} />
-              </div>
+              <FloatingInput label="Date of Birth (for SSE grouping)" type="date" value={memberForm.date_of_birth}
+                onChange={(e) => setMemberForm(f => ({ ...f, date_of_birth: e.target.value }))} />
             )}
 
             {/* Gender */}
-            <div>
-              <label className="block text-[13px] font-medium mb-1" style={{ color: '#7A6B5F' }}>Gender</label>
-              <select value={memberForm.gender}
-                onChange={(e) => setMemberForm(f => ({ ...f, gender: e.target.value }))}
-                className={inputClass} style={inputStyle}>
-                <option value="">-- Select --</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
-            </div>
+            <FloatingSelect label="Gender" value={memberForm.gender}
+              onChange={(e) => setMemberForm(f => ({ ...f, gender: e.target.value }))}>
+              <option value="">-- Select --</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </FloatingSelect>
 
             {/* Email (for spouse) - with lookup */}
             {memberForm.relationship === 'spouse' && (
               <div>
-                <label className="block text-[13px] font-medium mb-1" style={{ color: '#7A6B5F' }}>
-                  Email <span className="text-[11px]" style={{ color: '#A89888' }}>(to check if they already have an account)</span>
-                </label>
                 <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#A89888' }} />
-                  <input type="email" value={memberForm.email}
+                  <FloatingInput label="Spouse Email (check existing account)" type="email" value={memberForm.email}
+                    icon={<Mail size={16} />}
                     onChange={(e) => {
                       const val = e.target.value;
                       setMemberForm(f => ({ ...f, email: val }));
-                      // Debounced lookup
                       const timeout = setTimeout(() => lookupSpouseByEmail(val), 600);
                       return () => clearTimeout(timeout);
-                    }}
-                    className={`${inputClass} pl-9`} style={inputStyle} placeholder="spouse@example.com" />
+                    }} />
                   {spouseLookup.searching && (
                     <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin" style={{ color: '#A89888' }} />
                   )}
@@ -746,23 +720,13 @@ export default function MyFamily({ userId, familyId, familyRole, userName }: MyF
 
             {/* Phone (for spouse/parent) */}
             {(memberForm.relationship === 'spouse' || memberForm.relationship === 'parent') && (
-              <div>
-                <label className="block text-[13px] font-medium mb-1" style={{ color: '#7A6B5F' }}>Phone</label>
-                <input type="tel" value={memberForm.phone}
-                  onChange={(e) => setMemberForm(f => ({ ...f, phone: e.target.value }))}
-                  className={inputClass} style={inputStyle} placeholder="+1 (555) 000-0000" />
-              </div>
+              <FloatingInput label="Phone" type="tel" value={memberForm.phone}
+                onChange={(e) => setMemberForm(f => ({ ...f, phone: e.target.value }))} />
             )}
 
             {/* Notes */}
-            <div>
-              <label className="block text-[13px] font-medium mb-1" style={{ color: '#7A6B5F' }}>
-                Notes <span className="text-[11px]" style={{ color: '#A89888' }}>(allergies, special needs, etc.)</span>
-              </label>
-              <textarea value={memberForm.notes}
-                onChange={(e) => setMemberForm(f => ({ ...f, notes: e.target.value }))}
-                className={`${inputClass} resize-none`} style={inputStyle} rows={2} />
-            </div>
+            <FloatingInput label="Notes (allergies, special needs, etc.)" type="text" value={memberForm.notes}
+              onChange={(e) => setMemberForm(f => ({ ...f, notes: e.target.value }))} />
 
             {error && <p className="text-[13px] text-red-600">{error}</p>}
 

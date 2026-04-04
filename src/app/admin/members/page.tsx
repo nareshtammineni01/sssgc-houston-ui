@@ -22,25 +22,38 @@ export default async function AdminMembersPage() {
   if (!profile || !['admin', 'super_admin'].includes(profile.role)) redirect('/dashboard');
 
   // Fetch all data in parallel
-  const [membersRes, familiesRes, pendingHoursRes] = await Promise.all([
+  const [membersRes, familiesRes, pendingHoursRes, familyMembersRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, full_name, email, phone, city, state, role, family_id, family_role, created_at')
+      .select('id, full_name, email, phone, city, state, street_address, apt_suite, zip_code, whatsapp_opt_in, role, family_id, family_role, created_at')
       .order('created_at', { ascending: false }),
     supabase
       .from('families')
-      .select('id, family_name, created_at')
+      .select('id, family_name, invite_code, created_at')
       .order('family_name'),
     supabase
       .from('volunteer_hours')
       .select('id, user_id, project_name, hours, service_date, description, status, created_at')
       .eq('status', 'pending')
       .order('created_at', { ascending: false }),
+    supabase
+      .from('family_members')
+      .select('id, family_id, first_name, last_name, relationship, date_of_birth, gender, phone, notes')
+      .order('relationship')
+      .order('first_name'),
   ]);
 
   const members = membersRes.data ?? [];
   const families = familiesRes.data ?? [];
   const pendingHours = pendingHoursRes.data ?? [];
+  const familyMembers = familyMembersRes.data ?? [];
+
+  // Group dependents by family_id
+  const dependentsByFamily: Record<string, typeof familyMembers> = {};
+  familyMembers.forEach((fm) => {
+    if (!dependentsByFamily[fm.family_id]) dependentsByFamily[fm.family_id] = [];
+    dependentsByFamily[fm.family_id].push(fm);
+  });
 
   // Build user name map for pending hours
   const pendingUserIds = [...new Set(pendingHours.map((h) => h.user_id))];
@@ -120,6 +133,7 @@ export default async function AdminMembersPage() {
         families={families}
         membersByFamily={membersByFamily}
         unassigned={unassigned}
+        dependentsByFamily={dependentsByFamily}
       />
     </div>
   );
