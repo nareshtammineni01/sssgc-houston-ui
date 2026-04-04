@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { RichTextEditor } from '@/components/editor';
 import { Pin, Send, Save, Trash2, Mail, MessageSquare } from 'lucide-react';
+import { FloatingInput, FloatingSelect } from '@/components/ui/FloatingField';
 import type { Announcement } from '@/types/database';
 
 type AnnouncementCategory = 'devotion' | 'educare' | 'seva' | 'general';
@@ -123,37 +124,17 @@ export default function AnnouncementForm({
       )}
 
       {/* Title */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-          Title
-        </label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Announcement title"
-          className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
-      </div>
+      <FloatingInput label="Title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
 
       {/* Category + Pinned row */}
       <div className="flex items-end gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-            Category
-          </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as AnnouncementCategory)}
-            className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300 bg-white"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          >
+          <FloatingSelect label="Category" value={category} onChange={(e) => setCategory(e.target.value as AnnouncementCategory)}>
             <option value="general">General</option>
             <option value="devotion">Devotion</option>
             <option value="educare">Educare</option>
             <option value="seva">Seva</option>
-          </select>
+          </FloatingSelect>
         </div>
 
         <button
@@ -179,17 +160,8 @@ export default function AnnouncementForm({
       </div>
 
       {/* Expiration */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-          Expires at <span className="font-normal" style={{ color: '#A89888' }}>(optional)</span>
-        </label>
-        <input
-          type="datetime-local"
-          value={expiresAt}
-          onChange={(e) => setExpiresAt(e.target.value)}
-          className="px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
+      <div className="max-w-xs">
+        <FloatingInput label="Expires at (optional)" type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
       </div>
 
       {/* Notification toggles */}

@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Save, Trash2, Repeat } from 'lucide-react';
+import { FloatingInput, FloatingSelect, FloatingTextarea } from '@/components/ui/FloatingField';
 import type { Event } from '@/types/database';
 
 type EventCategory = Event['category'];
@@ -138,39 +139,17 @@ export default function EventForm({ mode, event, userId }: EventFormProps) {
       )}
 
       {/* Title */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>Title</label>
-        <input
-          type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Saturday Bhajan Session"
-          className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
-      </div>
+      <FloatingInput label="Title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
 
       {/* Category */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>Category</label>
-          <select
-            value={category} onChange={(e) => setCategory(e.target.value as EventCategory)}
-            className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          >
-            <option value="devotion">Devotion</option>
-            <option value="educare">Educare</option>
-            <option value="seva">Seva</option>
-            <option value="festival">Festival</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>Location</label>
-          <input
-            type="text" value={location} onChange={(e) => setLocation(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          />
-        </div>
+        <FloatingSelect label="Category" value={category} onChange={(e) => setCategory(e.target.value as EventCategory)}>
+          <option value="devotion">Devotion</option>
+          <option value="educare">Educare</option>
+          <option value="seva">Seva</option>
+          <option value="festival">Festival</option>
+        </FloatingSelect>
+        <FloatingInput label="Location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
       </div>
 
       {/* All day + Times */}
@@ -183,80 +162,37 @@ export default function EventForm({ mode, event, userId }: EventFormProps) {
           <span className="text-sm" style={{ color: '#2C1810' }}>All-day event</span>
         </label>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-              {allDay ? 'Date' : 'Start Time'}
-            </label>
-            <input
-              type={allDay ? 'date' : 'datetime-local'}
-              value={allDay ? startTime.slice(0, 10) : startTime}
-              onChange={(e) => setStartTime(allDay ? e.target.value + 'T00:00' : e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-              style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-            />
-          </div>
+          <FloatingInput
+            label={allDay ? 'Date' : 'Start Time'}
+            type={allDay ? 'date' : 'datetime-local'}
+            value={allDay ? startTime.slice(0, 10) : startTime}
+            onChange={(e) => setStartTime(allDay ? e.target.value + 'T00:00' : e.target.value)}
+          />
           {!allDay && (
-            <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>End Time</label>
-              <input
-                type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-                style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-              />
-            </div>
+            <FloatingInput label="End Time" type="datetime-local" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
           )}
         </div>
       </div>
 
       {/* Max capacity */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-          Max Capacity <span className="font-normal" style={{ color: '#A89888' }}>(leave blank for unlimited)</span>
-        </label>
-        <input
-          type="number" value={maxCapacity} onChange={(e) => setMaxCapacity(e.target.value)}
-          placeholder="e.g. 50"
-          className="w-48 px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
+      <div className="w-48">
+        <FloatingInput label="Max Capacity (optional)" type="number" value={maxCapacity} onChange={(e) => setMaxCapacity(e.target.value)} hint="Leave blank for unlimited" />
       </div>
 
       {/* Recurrence */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-          <Repeat size={14} className="inline mr-1" />
-          Recurrence
-        </label>
-        <select
-          value={rrulePreset}
-          onChange={(e) => handlePresetChange(e.target.value)}
-          className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        >
+      <div className="space-y-2">
+        <FloatingSelect label="Recurrence" value={rrulePreset} onChange={(e) => handlePresetChange(e.target.value)}>
           {RRULE_PRESETS.map((p) => (
             <option key={p.value} value={p.value}>{p.label}</option>
           ))}
-        </select>
+        </FloatingSelect>
         {rrulePreset === 'custom' && (
-          <input
-            type="text" value={rrule} onChange={(e) => setRrule(e.target.value)}
-            placeholder="FREQ=WEEKLY;BYDAY=SA;COUNT=10"
-            className="w-full mt-2 px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          />
+          <FloatingInput label="Custom RRULE" type="text" value={rrule} onChange={(e) => setRrule(e.target.value)} />
         )}
       </div>
 
       {/* Description */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>Description</label>
-        <textarea
-          value={description} onChange={(e) => setDescription(e.target.value)}
-          rows={4} placeholder="Event details, what to bring, etc."
-          className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
-      </div>
+      <FloatingTextarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
 
       {/* Cancelled toggle (edit only) */}
       {mode === 'edit' && (

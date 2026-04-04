@@ -20,10 +20,13 @@ interface FloatingInputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
 }
 
+// Input types that always show browser-rendered content (date pickers, etc.)
+const alwaysActiveTypes = new Set(['date', 'datetime-local', 'time', 'month', 'week']);
+
 export function FloatingInput({ label, icon, hint, error, className, value, ...props }: FloatingInputProps) {
   const [focused, setFocused] = useState(false);
   const hasValue = value !== undefined && value !== '';
-  const isActive = focused || hasValue;
+  const isActive = focused || hasValue || alwaysActiveTypes.has(props.type ?? '');
 
   return (
     <div>

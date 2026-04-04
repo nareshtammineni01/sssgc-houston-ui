@@ -14,9 +14,9 @@ type Member = {
   phone: string | null;
   city: string | null;
   state: string | null;
-  street_address?: string | null;
-  apt_suite?: string | null;
-  zip_code?: string | null;
+  address1?: string | null;
+  address2?: string | null;
+  zip?: string | null;
   whatsapp_opt_in?: boolean;
   role: string;
   family_id: string | null;
@@ -105,6 +105,10 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
   const [resetSending, setResetSending] = useState<string | null>(null);
   const [resetSuccess, setResetSuccess] = useState<string | null>(null);
   const [resetError, setResetError] = useState<string | null>(null);
+
+  // Reset confirmation modal
+  const [confirmResetEmail, setConfirmResetEmail] = useState<string | null>(null);
+  const [confirmResetName, setConfirmResetName] = useState<string>('');
 
   // View member modal
   const [viewMember, setViewMember] = useState<Member | null>(null);
@@ -376,16 +380,11 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
                                 </button>
                                 {m.email && (
                                   <button
-                                    onClick={() => { handleSendReset(m.email!); setOpenMenuId(null); }}
-                                    disabled={resetSending === m.email}
-                                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-sm hover:bg-[#FDF8F0] transition-colors disabled:opacity-50"
+                                    onClick={() => { setConfirmResetEmail(m.email!); setConfirmResetName(m.full_name); setOpenMenuId(null); }}
+                                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-left text-sm hover:bg-[#FDF8F0] transition-colors"
                                     style={{ color: '#2C1810' }}
                                   >
-                                    {resetSending === m.email ? (
-                                      <span className="w-3.5 h-3.5 border-2 border-[#6B1D2A]/30 border-t-[#6B1D2A] rounded-full animate-spin" />
-                                    ) : (
-                                      <KeyRound size={14} style={{ color: '#7A6B5F' }} />
-                                    )}
+                                    <KeyRound size={14} style={{ color: '#7A6B5F' }} />
                                     Reset Password
                                   </button>
                                 )}
@@ -575,7 +574,7 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
                   </div>
                 )}
 
-                {(viewMember.street_address || viewMember.city || viewMember.state) && (
+                {(viewMember.address1 || viewMember.city || viewMember.state) && (
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: '#FDF8F0' }}>
                       <MapPin size={14} style={{ color: '#E8860C' }} />
@@ -584,10 +583,10 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
                       <p className="text-[11px]" style={{ color: '#A89888' }}>Address</p>
                       <p className="text-sm" style={{ color: '#2C1810' }}>
                         {[
-                          viewMember.street_address,
-                          viewMember.apt_suite ? `Apt ${viewMember.apt_suite}` : null,
+                          viewMember.address1,
+                          viewMember.address2 ? `Apt ${viewMember.address2}` : null,
                           [viewMember.city, viewMember.state].filter(Boolean).join(', '),
-                          viewMember.zip_code,
+                          viewMember.zip,
                         ].filter(Boolean).join(', ')}
                       </p>
                     </div>
@@ -678,16 +677,11 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
               <div className="flex gap-2 pt-2 border-t" style={{ borderColor: 'rgba(107,29,42,0.08)' }}>
                 {viewMember.email && (
                   <button
-                    onClick={() => handleSendReset(viewMember.email!)}
-                    disabled={resetSending === viewMember.email}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium disabled:opacity-50 transition-colors"
+                    onClick={() => { setConfirmResetEmail(viewMember.email!); setConfirmResetName(viewMember.full_name); }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-medium transition-colors"
                     style={{ background: 'rgba(107,29,42,0.06)', color: '#6B1D2A' }}
                   >
-                    {resetSending === viewMember.email ? (
-                      <span className="w-3.5 h-3.5 border-2 border-[#6B1D2A]/30 border-t-[#6B1D2A] rounded-full animate-spin" />
-                    ) : (
-                      <KeyRound size={14} />
-                    )}
+                    <KeyRound size={14} />
                     Reset Password
                   </button>
                 )}
@@ -839,6 +833,59 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
                   Close
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ═══════════ RESET PASSWORD CONFIRMATION MODAL ═══════════ */}
+      {confirmResetEmail && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4" onClick={() => setConfirmResetEmail(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-xl" onClick={(e) => e.stopPropagation()}>
+            {/* Icon header */}
+            <div className="pt-6 pb-2 flex justify-center">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'rgba(107,29,42,0.08)' }}>
+                <KeyRound size={24} style={{ color: '#6B1D2A' }} />
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 pb-2 text-center">
+              <h3 className="text-[17px] font-semibold mb-2" style={{ color: '#2C1810' }}>Reset Password?</h3>
+              <p className="text-sm leading-relaxed" style={{ color: '#7A6B5F' }}>
+                This will send a password reset email to{' '}
+                <span className="font-medium" style={{ color: '#2C1810' }}>{confirmResetName}</span>{' '}
+                at <span className="font-medium" style={{ color: '#2C1810' }}>{confirmResetEmail}</span>.
+              </p>
+              <p className="text-xs mt-2" style={{ color: '#A89888' }}>
+                They will need to click the link in the email to set a new password.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="px-6 pb-6 pt-4 flex items-center justify-end gap-3">
+              <button
+                onClick={() => setConfirmResetEmail(null)}
+                className="px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors hover:bg-gray-50"
+                style={{ color: '#7A6B5F', borderColor: 'rgba(107,29,42,0.15)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleSendReset(confirmResetEmail);
+                  setConfirmResetEmail(null);
+                }}
+                disabled={resetSending === confirmResetEmail}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white whitespace-nowrap transition-colors disabled:opacity-50"
+                style={{ background: '#6B1D2A' }}
+              >
+                {resetSending === confirmResetEmail ? (
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <Mail size={14} />
+                )}
+                Send Reset Email
+              </button>
             </div>
           </div>
         </div>

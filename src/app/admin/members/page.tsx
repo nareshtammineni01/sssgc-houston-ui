@@ -25,7 +25,7 @@ export default async function AdminMembersPage() {
   const [membersRes, familiesRes, pendingHoursRes, familyMembersRes] = await Promise.all([
     supabase
       .from('profiles')
-      .select('id, full_name, email, phone, city, state, street_address, apt_suite, zip_code, whatsapp_opt_in, role, family_id, family_role, created_at')
+      .select('id, full_name, email, phone, city, state, address1, address2, zip, whatsapp_opt_in, role, family_id, family_role, created_at')
       .order('created_at', { ascending: false }),
     supabase
       .from('families')
@@ -46,7 +46,8 @@ export default async function AdminMembersPage() {
   const members = membersRes.data ?? [];
   const families = familiesRes.data ?? [];
   const pendingHours = pendingHoursRes.data ?? [];
-  const familyMembers = familyMembersRes.data ?? [];
+  // family_members table may not exist until migration 11 is run
+  const familyMembers = familyMembersRes.error ? [] : (familyMembersRes.data ?? []);
 
   // Group dependents by family_id
   const dependentsByFamily: Record<string, typeof familyMembers> = {};

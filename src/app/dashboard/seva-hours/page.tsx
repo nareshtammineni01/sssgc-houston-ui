@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { FloatingInput, FloatingTextarea } from '@/components/ui/FloatingField';
 import type { VolunteerHours } from '@/types/database';
 
 const statusColors: Record<string, string> = {
@@ -143,42 +144,11 @@ export default function SevaHoursPage() {
             <div className="p-3 rounded-xl text-sm bg-red-50 text-red-700 border border-red-200">{error}</div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: '#2C1810' }}>Project / Activity</label>
-              <input
-                type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)}
-                placeholder="e.g. Food distribution"
-                className="w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-                style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: '#2C1810' }}>Hours</label>
-              <input
-                type="number" min="0.5" step="0.5" value={hours} onChange={(e) => setHours(e.target.value)}
-                placeholder="e.g. 3"
-                className="w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-                style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: '#2C1810' }}>Date</label>
-              <input
-                type="date" value={serviceDate} onChange={(e) => setServiceDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-                style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-              />
-            </div>
+            <FloatingInput label="Project / Activity" type="text" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+            <FloatingInput label="Hours" type="number" min={0.5} step={0.5} value={hours} onChange={(e) => setHours(e.target.value)} />
+            <FloatingInput label="Date" type="date" value={serviceDate} onChange={(e) => setServiceDate(e.target.value)} />
           </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: '#2C1810' }}>Description (optional)</label>
-            <textarea
-              value={description} onChange={(e) => setDescription(e.target.value)}
-              rows={2} placeholder="Brief description of your service..."
-              className="w-full px-3 py-2 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-              style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-            />
-          </div>
+          <FloatingTextarea label="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
           <div className="flex justify-end gap-2">
             <button onClick={() => setShowForm(false)}
               className="px-4 py-2 rounded-xl text-sm font-medium transition-colors hover:bg-cream-100" style={{ color: '#7A6B5F' }}>

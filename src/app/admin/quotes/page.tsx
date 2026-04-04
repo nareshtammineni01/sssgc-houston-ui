@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { Plus, Trash2, Edit2, Save, X, Quote, Calendar } from 'lucide-react';
+import { FloatingInput, FloatingTextarea } from '@/components/ui/FloatingField';
 
 interface DailyQuote {
   id: string;
@@ -144,49 +145,28 @@ export default function AdminQuotesPage() {
             </button>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: '#2C1810' }}>
-              Quote Text *
-            </label>
-            <textarea
-              value={form.quote_text}
-              onChange={(e) => setForm({ ...form, quote_text: e.target.value })}
-              className={inputClass}
-              style={{ ...inputStyle, minHeight: '100px' }}
-              placeholder="Enter the quote..."
-              required
-            />
-          </div>
+          <FloatingTextarea
+            label="Quote Text *"
+            value={form.quote_text}
+            onChange={(e) => setForm({ ...form, quote_text: e.target.value })}
+            rows={4}
+            required
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#2C1810' }}>
-                Source
-              </label>
-              <input
-                type="text"
-                value={form.source}
-                onChange={(e) => setForm({ ...form, source: e.target.value })}
-                className={inputClass}
-                style={inputStyle}
-                placeholder="Sri Sathya Sai Baba"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: '#2C1810' }}>
-                Display Date (optional)
-              </label>
-              <input
-                type="date"
-                value={form.display_date}
-                onChange={(e) => setForm({ ...form, display_date: e.target.value })}
-                className={inputClass}
-                style={inputStyle}
-              />
-              <p className="text-[10px] mt-1" style={{ color: '#A89888' }}>
-                Leave empty for rotation pool
-              </p>
-            </div>
+            <FloatingInput
+              label="Source"
+              type="text"
+              value={form.source}
+              onChange={(e) => setForm({ ...form, source: e.target.value })}
+            />
+            <FloatingInput
+              label="Display Date (optional)"
+              type="date"
+              value={form.display_date}
+              onChange={(e) => setForm({ ...form, display_date: e.target.value })}
+              hint="Leave empty for rotation pool"
+            />
             <div className="flex items-end">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input

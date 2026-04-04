@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Save, Trash2, X } from 'lucide-react';
+import { FloatingInput, FloatingSelect, FloatingTextarea } from '@/components/ui/FloatingField';
 import type { Resource } from '@/types/database';
 
 type ResourceCategory = Resource['category'];
@@ -108,112 +109,30 @@ export default function ResourceForm({ mode, resource, userId }: ResourceFormPro
       )}
 
       {/* Title */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-          Title
-        </label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Ganesha Sharanam"
-          className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
-      </div>
+      <FloatingInput label="Title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
 
       {/* Category + Deity row */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-            Category
-          </label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value as ResourceCategory)}
-            className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          >
-            <option value="bhajan">Bhajan</option>
-            <option value="prayer">Prayer</option>
-            <option value="study_circle">Study Circle</option>
-            <option value="document">Document</option>
-            <option value="bhajan_resource">Bhajan Resource</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-            Deity <span className="font-normal" style={{ color: '#A89888' }}>(optional)</span>
-          </label>
-          <input
-            type="text"
-            value={deity}
-            onChange={(e) => setDeity(e.target.value)}
-            placeholder="e.g. Ganesha, Sai Baba"
-            className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          />
-        </div>
+        <FloatingSelect label="Category" value={category} onChange={(e) => setCategory(e.target.value as ResourceCategory)}>
+          <option value="bhajan">Bhajan</option>
+          <option value="prayer">Prayer</option>
+          <option value="study_circle">Study Circle</option>
+          <option value="document">Document</option>
+          <option value="bhajan_resource">Bhajan Resource</option>
+        </FloatingSelect>
+        <FloatingInput label="Deity (optional)" type="text" value={deity} onChange={(e) => setDeity(e.target.value)} />
       </div>
 
       {/* Content / Lyrics */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-          Content / Lyrics
-        </label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={8}
-          placeholder="Paste lyrics or text content here..."
-          className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
-      </div>
+      <FloatingTextarea label="Content / Lyrics" value={content} onChange={(e) => setContent(e.target.value)} rows={8} />
 
       {/* Keywords */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-          Keywords <span className="font-normal" style={{ color: '#A89888' }}>(comma-separated)</span>
-        </label>
-        <input
-          type="text"
-          value={keywords}
-          onChange={(e) => setKeywords(e.target.value)}
-          placeholder="e.g. ganesha, ganesh, vinayaka, obstacle remover"
-          className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
-      </div>
+      <FloatingInput label="Keywords (comma-separated)" type="text" value={keywords} onChange={(e) => setKeywords(e.target.value)} />
 
       {/* URLs */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-            File URL <span className="font-normal" style={{ color: '#A89888' }}>(PDF)</span>
-          </label>
-          <input
-            type="url"
-            value={fileUrl}
-            onChange={(e) => setFileUrl(e.target.value)}
-            placeholder="https://..."
-            className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-            Audio URL
-          </label>
-          <input
-            type="url"
-            value={audioUrl}
-            onChange={(e) => setAudioUrl(e.target.value)}
-            placeholder="https://..."
-            className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          />
-        </div>
+        <FloatingInput label="File URL (PDF)" type="url" value={fileUrl} onChange={(e) => setFileUrl(e.target.value)} />
+        <FloatingInput label="Audio URL" type="url" value={audioUrl} onChange={(e) => setAudioUrl(e.target.value)} />
       </div>
 
       {/* Actions */}

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Save, LogOut } from 'lucide-react';
+import { FloatingInput, FloatingSelect } from '@/components/ui/FloatingField';
 
 const US_STATES = [
   'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA',
@@ -118,12 +119,6 @@ export default function SettingsPage() {
     router.refresh();
   }
 
-  const inputClass =
-    'w-full px-3 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#E8860C]/40 transition-colors';
-  const inputStyle = { borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' };
-  const labelClass = 'block text-sm font-medium mb-1';
-  const labelStyle = { color: '#2C1810' };
-
   if (loading) {
     return (
       <div className="page-enter max-w-xl mx-auto">
@@ -145,64 +140,38 @@ export default function SettingsPage() {
 
         {/* Name */}
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={labelClass} style={labelStyle}>First Name</label>
-            <input type="text" value={profile.first_name}
-              onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
-              className={inputClass} style={inputStyle} required />
-          </div>
-          <div>
-            <label className={labelClass} style={labelStyle}>Last Name</label>
-            <input type="text" value={profile.last_name}
-              onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
-              className={inputClass} style={inputStyle} required />
-          </div>
+          <FloatingInput label="First Name" type="text" value={profile.first_name}
+            onChange={(e) => setProfile({ ...profile, first_name: e.target.value })} required />
+          <FloatingInput label="Last Name" type="text" value={profile.last_name}
+            onChange={(e) => setProfile({ ...profile, last_name: e.target.value })} required />
         </div>
 
         {/* Phone */}
-        <div>
-          <label className={labelClass} style={labelStyle}>Phone</label>
-          <input type="tel" value={profile.phone}
-            onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-            className={inputClass} style={inputStyle} placeholder="+1 (555) 000-0000" />
-        </div>
+        <FloatingInput label="Phone" type="tel" value={profile.phone}
+          onChange={(e) => setProfile({ ...profile, phone: e.target.value })} />
 
         {/* Address */}
-        <div>
-          <label className={labelClass} style={labelStyle}>Address Line 1</label>
-          <input type="text" value={profile.address1}
-            onChange={(e) => setProfile({ ...profile, address1: e.target.value })}
-            className={inputClass} style={inputStyle} placeholder="Street address" />
-        </div>
-        <div>
-          <label className={labelClass} style={labelStyle}>Address Line 2</label>
-          <input type="text" value={profile.address2}
-            onChange={(e) => setProfile({ ...profile, address2: e.target.value })}
-            className={inputClass} style={inputStyle} placeholder="Apt, suite, unit (optional)" />
-        </div>
+        <FloatingInput label="Address Line 1" type="text" value={profile.address1}
+          onChange={(e) => setProfile({ ...profile, address1: e.target.value })} />
+        <FloatingInput label="Address Line 2 (optional)" type="text" value={profile.address2}
+          onChange={(e) => setProfile({ ...profile, address2: e.target.value })} />
 
         {/* City / State / Zip */}
         <div className="grid grid-cols-6 gap-3">
           <div className="col-span-3">
-            <label className={labelClass} style={labelStyle}>City</label>
-            <input type="text" value={profile.city}
-              onChange={(e) => setProfile({ ...profile, city: e.target.value })}
-              className={inputClass} style={inputStyle} />
+            <FloatingInput label="City" type="text" value={profile.city}
+              onChange={(e) => setProfile({ ...profile, city: e.target.value })} />
           </div>
           <div className="col-span-1">
-            <label className={labelClass} style={labelStyle}>State</label>
-            <select value={profile.state}
-              onChange={(e) => setProfile({ ...profile, state: e.target.value })}
-              className={inputClass} style={inputStyle}>
+            <FloatingSelect label="State" value={profile.state}
+              onChange={(e) => setProfile({ ...profile, state: e.target.value })}>
               <option value="">—</option>
               {US_STATES.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
+            </FloatingSelect>
           </div>
           <div className="col-span-2">
-            <label className={labelClass} style={labelStyle}>Zip</label>
-            <input type="text" value={profile.zip}
-              onChange={(e) => setProfile({ ...profile, zip: e.target.value })}
-              className={inputClass} style={inputStyle} placeholder="77494" maxLength={10} />
+            <FloatingInput label="Zip" type="text" value={profile.zip}
+              onChange={(e) => setProfile({ ...profile, zip: e.target.value })} maxLength={10} />
           </div>
         </div>
 

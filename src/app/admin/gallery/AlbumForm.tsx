@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Save, Trash2, Eye, EyeOff, Upload, X } from 'lucide-react';
+import { FloatingInput, FloatingSelect, FloatingTextarea } from '@/components/ui/FloatingField';
 import type { GalleryAlbum, GalleryPhoto } from '@/types/database';
 
 type AlbumCategory = NonNullable<GalleryAlbum['category']>;
@@ -128,40 +129,18 @@ export default function AlbumForm({ mode, album, photos = [], userId }: AlbumFor
       )}
 
       {/* Title */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>Title</label>
-        <input
-          type="text" value={title} onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Akhanda Bhajan 2025"
-          className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
-      </div>
+      <FloatingInput label="Title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
 
       {/* Category + Date + Published */}
       <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>Category</label>
-          <select
-            value={category} onChange={(e) => setCategory(e.target.value as AlbumCategory)}
-            className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          >
-            <option value="general">General</option>
-            <option value="devotion">Devotion</option>
-            <option value="educare">Educare</option>
-            <option value="seva">Seva</option>
-            <option value="festival">Festival</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>Event Date</label>
-          <input
-            type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          />
-        </div>
+        <FloatingSelect label="Category" value={category} onChange={(e) => setCategory(e.target.value as AlbumCategory)}>
+          <option value="general">General</option>
+          <option value="devotion">Devotion</option>
+          <option value="educare">Educare</option>
+          <option value="seva">Seva</option>
+          <option value="festival">Festival</option>
+        </FloatingSelect>
+        <FloatingInput label="Event Date" type="date" value={eventDate} onChange={(e) => setEventDate(e.target.value)} />
         <div className="flex items-end">
           <button
             type="button"
@@ -179,28 +158,10 @@ export default function AlbumForm({ mode, album, photos = [], userId }: AlbumFor
       </div>
 
       {/* Description */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>Description</label>
-        <textarea
-          value={description} onChange={(e) => setDescription(e.target.value)}
-          rows={3} placeholder="Brief description of the album..."
-          className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
-      </div>
+      <FloatingTextarea label="Description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
 
       {/* Cover image URL */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-          Cover Image URL <span className="font-normal" style={{ color: '#A89888' }}>(Supabase Storage or external)</span>
-        </label>
-        <input
-          type="url" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)}
-          placeholder="https://..."
-          className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-          style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-        />
-      </div>
+      <FloatingInput label="Cover Image URL" type="url" value={coverImageUrl} onChange={(e) => setCoverImageUrl(e.target.value)} hint="Supabase Storage or external URL" />
 
       {/* Photos section (edit mode only) */}
       {mode === 'edit' && (

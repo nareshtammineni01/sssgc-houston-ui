@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, GraduationCap, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { FloatingInput, FloatingSelect, FloatingTextarea } from '@/components/ui/FloatingField';
 import type { EducareEnrollment } from '@/types/database';
 
 const AGE_GROUPS = [
@@ -192,71 +193,23 @@ export default function EducareEnrollPage() {
         )}
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-              Child&apos;s Name
-            </label>
-            <input
-              type="text" value={childName} onChange={(e) => setChildName(e.target.value)}
-              placeholder="Full name" required
-              className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-              style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-              Age
-            </label>
-            <input
-              type="number" value={childAge} onChange={(e) => setChildAge(e.target.value)}
-              min={5} max={18} placeholder="5-18" required
-              className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-              style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-            />
-          </div>
+          <FloatingInput label="Child's Name" type="text" value={childName} onChange={(e) => setChildName(e.target.value)} required />
+          <FloatingInput label="Age" type="number" value={childAge} onChange={(e) => setChildAge(e.target.value)} min={5} max={18} required />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-              Age Group
-            </label>
-            <select
-              value={ageGroup} onChange={(e) => setAgeGroup(e.target.value as EducareEnrollment['age_group'])}
-              className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-saffron-300"
-              style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-            >
-              {AGE_GROUPS.map((g) => (
-                <option key={g.value} value={g.value}>{g.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-              Mode
-            </label>
-            <select
-              value={enrollmentMode} onChange={(e) => setEnrollmentMode(e.target.value as 'in_person' | 'remote')}
-              className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-saffron-300"
-              style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-            >
-              <option value="in_person">In-person</option>
-              <option value="remote">Remote</option>
-            </select>
-          </div>
+          <FloatingSelect label="Age Group" value={ageGroup} onChange={(e) => setAgeGroup(e.target.value as EducareEnrollment['age_group'])}>
+            {AGE_GROUPS.map((g) => (
+              <option key={g.value} value={g.value}>{g.label}</option>
+            ))}
+          </FloatingSelect>
+          <FloatingSelect label="Mode" value={enrollmentMode} onChange={(e) => setEnrollmentMode(e.target.value as 'in_person' | 'remote')}>
+            <option value="in_person">In-person</option>
+            <option value="remote">Remote</option>
+          </FloatingSelect>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#2C1810' }}>
-            Notes <span className="font-normal" style={{ color: '#A89888' }}>(optional)</span>
-          </label>
-          <textarea
-            value={notes} onChange={(e) => setNotes(e.target.value)}
-            rows={3} placeholder="Any allergies, special needs, or notes for the teacher..."
-            className="w-full px-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-saffron-300"
-            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-          />
-        </div>
+        <FloatingTextarea label="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
 
         <button
           type="submit" disabled={saving}
