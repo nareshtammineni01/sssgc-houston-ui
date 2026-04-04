@@ -29,6 +29,9 @@ const mainNav = [
   { label: 'Resources', href: '/resources', icon: BookOpen },
   { label: 'Calendar', href: '/calendar', icon: Calendar },
   { label: 'Announcements', href: '/announcements', icon: Megaphone },
+];
+
+const authNav = [
   { label: 'Profile', href: '/profile', icon: UserCog },
 ];
 
@@ -87,7 +90,7 @@ export default function Sidebar({ isOpen, onClose, userRole, userName }: Sidebar
         {/* Logo — gradient circle + text */}
         <div className="flex items-center gap-2.5 px-4 py-4 border-b border-[rgba(107,29,42,0.1)]">
           <Link href="/" className="flex items-center gap-2.5" onClick={onClose}>
-            <img src="/sss-logo.webp" alt="SSSGC Logo" className="w-9 h-9 rounded-full object-cover" />
+            <img src="/sss-logo.webp" alt="SSSGC Logo" className="w-9 h-9 rounded-lg object-cover" />
             <div>
               <div className="font-heading text-sm font-semibold text-[#6B1D2A] leading-tight">
                 SSSGC Houston
@@ -109,6 +112,24 @@ export default function Sidebar({ isOpen, onClose, userRole, userName }: Sidebar
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-2 flex flex-col gap-0.5">
           {mainNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onClose}
+              className={cn(
+                'flex items-center gap-2.5 px-3 py-[9px] rounded-lg text-[13px] transition-all duration-150',
+                isActive(item.href)
+                  ? 'bg-[#6B1D2A] text-white'
+                  : 'text-[#7A6B5F] hover:bg-[#FDF8F0] hover:text-[#2C1810]'
+              )}
+            >
+              <item.icon size={15} />
+              <span className="flex-1">{item.label}</span>
+            </Link>
+          ))}
+
+          {/* Profile — only when logged in */}
+          {userName && authNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}

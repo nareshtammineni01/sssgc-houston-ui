@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Menu, Search, Bell, User, X } from 'lucide-react';
+import { Menu, Search, Bell, User, X, UserCog, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface TopBarProps {
@@ -34,6 +34,10 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
   const [unreadCount, setUnreadCount] = useState(0);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  // Profile dropdown state
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
   // Fetch recent announcements
   useEffect(() => {
     fetchAnnouncements();
@@ -48,6 +52,13 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
           fetchAnnouncements();
         }
       )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'announcements' },
+        () => {
+          fetchAnnouncements();
+        }
+      )
       .subscribe();
 
     return () => {
@@ -55,11 +66,14 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
     };
   }, []);
 
-  // Close notifications on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setShowNotifications(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -67,22 +81,25 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
   }, []);
 
   async function fetchAnnouncements() {
-    const { data, count } = await supabase
+    const now = new Date().toISOString();
+
+    const { data } = await supabase
       .from('announcements')
-      .select('id, title, body_plain, category, published_at', { count: 'exact' })
+      .select('id, title, body_plain, category, published_at')
       .not('published_at', 'is', null)
+      .or(`expires_at.is.null,expires_at.gt.${now}`)
       .order('published_at', { ascending: false })
       .limit(5);
 
     setAnnouncements(data ?? []);
 
-    // Count announcements from last 7 days as "unread"
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    const recent = (data ?? []).filter(
-      (a) => new Date(a.published_at) > weekAgo
+    // Count notifications newer than the last time user opened the bell
+    const lastSeen = localStorage.getItem('notif_last_seen');
+    const lastSeenDate = lastSeen ? new Date(lastSeen) : new Date(0);
+    const unseen = (data ?? []).filter(
+      (a) => new Date(a.published_at) > lastSeenDate
     );
-    setUnreadCount(recent.length);
+    setUnreadCount(unseen.length);
   }
 
   function handleSearch(e: React.FormEvent) {
@@ -103,6 +120,13 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
     const days = Math.floor(hrs / 24);
     if (days < 7) return `${days}d ago`;
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    setShowProfileMenu(false);
+    router.push('/');
+    router.refresh();
   }
 
   const categoryDotColor: Record<string, string> = {
@@ -129,7 +153,7 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
 
         {/* Mobile logo */}
         <Link href="/" className="md:hidden flex items-center gap-1.5">
-          <img src="/sss-logo.webp" alt="SSSGC Logo" className="w-7 h-7 rounded-full object-cover" />
+          <img src="/sss-logo.webp" alt="SSSGC Logo" className="w-7 h-7 rounded-lg object-cover" />
           <span className="text-sm font-heading font-semibold text-[#6B1D2A]">SSSGC Houston</span>
         </Link>
 
@@ -183,8 +207,12 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => {
-              setShowNotifications(!showNotifications);
-              if (!showNotifications) setUnreadCount(0);
+              const opening = !showNotifications;
+              setShowNotifications(opening);
+              if (opening) {
+                setUnreadCount(0);
+                localStorage.setItem('notif_last_seen', new Date().toISOString());
+              }
             }}
             className="w-[34px] h-[34px] rounded-full bg-[#FDF8F0] flex items-center justify-center"
           >
@@ -251,16 +279,49 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
           )}
         </div>
 
-        {/* Profile icon */}
-        <Link href="/dashboard">
-          <div className="w-[34px] h-[34px] rounded-full bg-[#FDF8F0] flex items-center justify-center">
+        {/* Profile icon with dropdown */}
+        <div className="relative" ref={profileRef}>
+          <button
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="w-[34px] h-[34px] rounded-full bg-[#FDF8F0] flex items-center justify-center"
+          >
             {avatarUrl ? (
               <img src={avatarUrl} alt="" className="w-full h-full rounded-full object-cover" />
             ) : (
               <User size={15} className="text-[#7A6B5F]" />
             )}
-          </div>
-        </Link>
+          </button>
+
+          {/* Profile dropdown */}
+          {showProfileMenu && (
+            <div className="absolute right-0 top-[42px] w-[200px] bg-white rounded-xl shadow-lg border border-[rgba(107,29,42,0.1)] overflow-hidden z-50">
+              {userName && (
+                <div className="px-4 py-3 border-b border-[rgba(107,29,42,0.08)]">
+                  <p className="text-[13px] font-semibold truncate" style={{ color: '#2C1810' }}>
+                    {userName}
+                  </p>
+                </div>
+              )}
+              <Link
+                href="/profile"
+                onClick={() => setShowProfileMenu(false)}
+                className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] hover:bg-[#FDF8F0] transition-colors"
+                style={{ color: '#7A6B5F' }}
+              >
+                <UserCog size={15} />
+                My Profile
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] hover:bg-red-50 transition-colors border-t border-[rgba(107,29,42,0.05)]"
+                style={{ color: '#DC2626' }}
+              >
+                <LogOut size={15} />
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

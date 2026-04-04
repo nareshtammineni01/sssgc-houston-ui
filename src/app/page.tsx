@@ -13,6 +13,9 @@ import { LiveTicker } from '@/components/home/LiveTicker';
 export default async function HomePage() {
   const supabase = createClient();
 
+  // Check if user is logged in
+  const { data: { user } } = await supabase.auth.getUser();
+
   // Fetch daily quote
   const { data: quotes } = await supabase.rpc('get_daily_quote');
   const quote = quotes?.[0];
@@ -56,7 +59,7 @@ export default async function HomePage() {
         {/* Sai Baba image — right side, blended (desktop) */}
         <div className="absolute inset-y-0 right-0 w-[55%] hidden md:block">
           <Image
-            src="/sai-baba.jpeg"
+            src="/sai-baba-new-image.png"
             alt="Sri Sathya Sai Baba"
             fill
             className="object-contain object-right sai-mask"
@@ -68,7 +71,7 @@ export default async function HomePage() {
         {/* Sai Baba image — subtle background on mobile */}
         <div className="absolute inset-0 md:hidden opacity-20">
           <Image
-            src="/sai-baba.jpeg"
+            src="/sai-baba-new-image.png"
             alt="Sri Sathya Sai Baba"
             fill
             className="object-cover object-top"
@@ -115,10 +118,12 @@ export default async function HomePage() {
               A spiritual community inspired by the teachings of Sri Sathya Sai Baba.
               Join us for devotion, education, and selfless service.
             </p>
-            <div className="flex gap-3">
-              <Link href="/login" className="btn-primary">Join us</Link>
-              <Link href="/about" className="btn-secondary">Learn more</Link>
-            </div>
+            {!user && (
+              <div className="flex gap-3">
+                <Link href="/login" className="btn-primary">Join us</Link>
+                <Link href="/about" className="btn-secondary">Learn more</Link>
+              </div>
+            )}
           </div>
         </div>
       </section>

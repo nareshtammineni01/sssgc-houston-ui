@@ -15,7 +15,7 @@ export default function LoginPage() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') ?? '/dashboard';
+  const redirect = searchParams.get('redirect') ?? '/';
   const authError = searchParams.get('error');
 
   const supabase = createClient();
@@ -56,10 +56,7 @@ export default function LoginPage() {
         <div className="card p-8">
           {/* Header */}
           <div className="text-center mb-6">
-            <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center text-white font-heading text-xl font-semibold"
-              style={{ background: 'linear-gradient(135deg, #E8860C, #6B1D2A)' }}>
-              S
-            </div>
+            <img src="/sss-logo.webp" alt="SSSGC Logo" className="w-14 h-14 rounded-lg mx-auto mb-3 object-cover" />
             <h1 className="text-xl font-heading font-semibold" style={{ color: '#6B1D2A' }}>
               Welcome Back
             </h1>
@@ -148,7 +145,7 @@ export default function LoginPage() {
           {/* Switch to signup */}
           <div className="mt-5 text-center">
             <span className="text-sm" style={{ color: '#7A6B5F' }}>Don&apos;t have an account? </span>
-            <Link href={`/signup${redirect !== '/dashboard' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
+            <Link href={`/signup${redirect !== '/' ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
               className="text-sm font-medium" style={{ color: '#E8860C' }}>
               Create one
             </Link>

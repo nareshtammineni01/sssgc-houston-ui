@@ -10,7 +10,7 @@ const bottomTabs = [
   { label: 'Resources', href: '/resources', icon: BookOpen },
   { label: 'Calendar', href: '/calendar', icon: Calendar },
   { label: 'Devotion', href: '/devotion', icon: Heart },
-  { label: 'Profile', href: '/dashboard', icon: UserCircle },
+  { label: 'Profile', href: '/profile', icon: UserCircle },
 ];
 
 export default function BottomNav() {

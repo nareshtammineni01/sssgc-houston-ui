@@ -7,7 +7,7 @@ export default function Loading() {
           <img
             src="/sss-logo.webp"
             alt="Loading..."
-            className="w-14 h-14 rounded-full logo-loader"
+            className="w-14 h-14 rounded-lg logo-loader"
           />
         </div>
         <p className="text-sm" style={{ color: '#A89888' }}>Loading...</p>
