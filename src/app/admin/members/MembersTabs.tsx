@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Home } from 'lucide-react';
+import { Users, Home, Search, Filter, KeyRound, CheckCircle2, X } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
 type Member = {
@@ -45,6 +45,82 @@ const familyRoleLabels: Record<string, string> = {
 
 export default function MembersTabs({ members, families, membersByFamily, unassigned }: MembersTabsProps) {
   const [tab, setTab] = useState<'members' | 'families'>('members');
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [showFilters, setShowFilters] = useState(false);
+  const [resetSending, setResetSending] = useState<string | null>(null);
+  const [resetSuccess, setResetSuccess] = useState<string | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
+
+  // Filter members based on search and role
+  const filteredMembers = members.filter((m) => {
+    const matchesSearch =
+      !search ||
+      m.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      m.email?.toLowerCase().includes(search.toLowerCase()) ||
+      m.phone?.includes(search) ||
+      m.city?.toLowerCase().includes(search.toLowerCase()) ||
+      m.state?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesRole = roleFilter === 'all' || m.role === roleFilter;
+
+    return matchesSearch && matchesRole;
+  });
+
+  // Filter families based on search
+  const filteredFamilies = families.filter((f) => {
+    if (!search) return true;
+    const searchLower = search.toLowerCase();
+    const familyMembers = membersByFamily[f.id] ?? [];
+    return (
+      f.family_name.toLowerCase().includes(searchLower) ||
+      familyMembers.some(
+        (m) =>
+          m.full_name?.toLowerCase().includes(searchLower) ||
+          m.email?.toLowerCase().includes(searchLower)
+      )
+    );
+  });
+
+  // Filter unassigned based on search
+  const filteredUnassigned = unassigned.filter((m) => {
+    if (!search) return true;
+    const searchLower = search.toLowerCase();
+    return (
+      m.full_name?.toLowerCase().includes(searchLower) ||
+      m.email?.toLowerCase().includes(searchLower) ||
+      m.phone?.includes(search)
+    );
+  });
+
+  async function handleSendReset(email: string) {
+    setResetSending(email);
+    setResetError(null);
+    setResetSuccess(null);
+
+    try {
+      const res = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setResetError(data.error || 'Failed to send reset email');
+      } else {
+        setResetSuccess(email);
+        setTimeout(() => setResetSuccess(null), 4000);
+      }
+    } catch {
+      setResetError('Network error. Please try again.');
+    } finally {
+      setResetSending(null);
+    }
+  }
+
+  const uniqueRoles = Array.from(new Set(members.map((m) => m.role)));
 
   return (
     <div>
@@ -74,13 +150,134 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
         </button>
       </div>
 
+      {/* Search & Filter bar */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#A89888' }} />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, email, phone, or location..."
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-[#E8860C]/40 transition-colors"
+            style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              style={{ color: '#A89888' }}
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        {tab === 'members' && (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-colors"
+              style={{
+                borderColor: roleFilter !== 'all' ? '#6B1D2A' : 'rgba(107,29,42,0.15)',
+                color: roleFilter !== 'all' ? '#6B1D2A' : '#7A6B5F',
+                background: roleFilter !== 'all' ? 'rgba(107,29,42,0.05)' : 'transparent',
+              }}
+            >
+              <Filter size={14} />
+              Filter
+              {roleFilter !== 'all' && (
+                <span className="w-2 h-2 rounded-full" style={{ background: '#6B1D2A' }} />
+              )}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Role filter pills */}
+      {tab === 'members' && showFilters && (
+        <div className="flex flex-wrap gap-2 mb-4 p-3 rounded-xl" style={{ background: '#FDF8F0' }}>
+          <span className="text-xs font-medium self-center mr-1" style={{ color: '#7A6B5F' }}>Role:</span>
+          <button
+            onClick={() => setRoleFilter('all')}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+            style={roleFilter === 'all'
+              ? { background: '#6B1D2A', color: '#fff' }
+              : { background: '#fff', color: '#7A6B5F', border: '1px solid rgba(107,29,42,0.15)' }
+            }
+          >
+            All ({members.length})
+          </button>
+          {uniqueRoles.map((role) => (
+            <button
+              key={role}
+              onClick={() => setRoleFilter(role)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-colors"
+              style={roleFilter === role
+                ? { background: '#6B1D2A', color: '#fff' }
+                : { background: '#fff', color: '#7A6B5F', border: '1px solid rgba(107,29,42,0.15)' }
+              }
+            >
+              {role.replace('_', ' ')} ({members.filter((m) => m.role === role).length})
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Reset feedback toast */}
+      {(resetSuccess || resetError) && (
+        <div
+          className="mb-4 p-3 rounded-xl text-sm flex items-center gap-2"
+          style={resetSuccess
+            ? { background: 'rgba(34,197,94,0.08)', color: '#16a34a', border: '1px solid rgba(34,197,94,0.2)' }
+            : { background: 'rgba(239,68,68,0.08)', color: '#dc2626', border: '1px solid rgba(239,68,68,0.2)' }
+          }
+        >
+          {resetSuccess ? (
+            <>
+              <CheckCircle2 size={16} />
+              Password reset email sent to {resetSuccess}
+            </>
+          ) : (
+            <>
+              <X size={16} />
+              {resetError}
+            </>
+          )}
+          <button
+            onClick={() => { setResetSuccess(null); setResetError(null); }}
+            className="ml-auto"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Search results count */}
+      {search && (
+        <p className="text-xs mb-3" style={{ color: '#A89888' }}>
+          {tab === 'members'
+            ? `Showing ${filteredMembers.length} of ${members.length} members`
+            : `Showing ${filteredFamilies.length} of ${families.length} families`
+          }
+        </p>
+      )}
+
       {/* Members tab */}
       {tab === 'members' && (
         <>
-          {members.length === 0 ? (
+          {filteredMembers.length === 0 ? (
             <div className="card p-12 text-center" style={{ color: '#A89888' }}>
               <Users size={40} className="mx-auto mb-3" />
-              <p>No members found.</p>
+              <p>{search || roleFilter !== 'all' ? 'No members match your search.' : 'No members found.'}</p>
+              {(search || roleFilter !== 'all') && (
+                <button
+                  onClick={() => { setSearch(''); setRoleFilter('all'); }}
+                  className="mt-2 text-sm font-medium" style={{ color: '#E8860C' }}
+                >
+                  Clear filters
+                </button>
+              )}
             </div>
           ) : (
             <div className="card overflow-hidden">
@@ -90,19 +287,22 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
                     <tr style={{ background: '#FDF8F0' }}>
                       <th className="text-left px-4 py-3 text-xs font-medium" style={{ color: '#7A6B5F' }}>Name</th>
                       <th className="text-left px-4 py-3 text-xs font-medium" style={{ color: '#7A6B5F' }}>Email</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium" style={{ color: '#7A6B5F' }}>Phone</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium" style={{ color: '#7A6B5F' }}>Location</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium hidden sm:table-cell" style={{ color: '#7A6B5F' }}>Phone</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium hidden md:table-cell" style={{ color: '#7A6B5F' }}>Location</th>
                       <th className="text-left px-4 py-3 text-xs font-medium" style={{ color: '#7A6B5F' }}>Role</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium" style={{ color: '#7A6B5F' }}>Joined</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium hidden lg:table-cell" style={{ color: '#7A6B5F' }}>Joined</th>
+                      <th className="text-right px-4 py-3 text-xs font-medium" style={{ color: '#7A6B5F' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y" style={{ borderColor: 'rgba(107,29,42,0.08)' }}>
-                    {members.map((m) => (
+                    {filteredMembers.map((m) => (
                       <tr key={m.id} className="hover:bg-[#FDF8F0]/50">
                         <td className="px-4 py-3 font-medium" style={{ color: '#2C1810' }}>{m.full_name}</td>
-                        <td className="px-4 py-3" style={{ color: '#7A6B5F' }}>{m.email ?? '—'}</td>
-                        <td className="px-4 py-3" style={{ color: '#7A6B5F' }}>{m.phone ?? '—'}</td>
                         <td className="px-4 py-3" style={{ color: '#7A6B5F' }}>
+                          <span className="text-xs sm:text-sm">{m.email ?? '—'}</span>
+                        </td>
+                        <td className="px-4 py-3 hidden sm:table-cell" style={{ color: '#7A6B5F' }}>{m.phone ?? '—'}</td>
+                        <td className="px-4 py-3 hidden md:table-cell" style={{ color: '#7A6B5F' }}>
                           {[m.city, m.state].filter(Boolean).join(', ') || '—'}
                         </td>
                         <td className="px-4 py-3">
@@ -110,7 +310,25 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
                             {m.role.replace('_', ' ')}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-xs" style={{ color: '#A89888' }}>{formatDate(m.created_at)}</td>
+                        <td className="px-4 py-3 text-xs hidden lg:table-cell" style={{ color: '#A89888' }}>{formatDate(m.created_at)}</td>
+                        <td className="px-4 py-3 text-right">
+                          {m.email && (
+                            <button
+                              onClick={() => handleSendReset(m.email!)}
+                              disabled={resetSending === m.email}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-colors disabled:opacity-50"
+                              style={{ background: 'rgba(107,29,42,0.06)', color: '#6B1D2A' }}
+                              title={`Send password reset to ${m.email}`}
+                            >
+                              {resetSending === m.email ? (
+                                <span className="w-3 h-3 border-2 border-[#6B1D2A]/30 border-t-[#6B1D2A] rounded-full animate-spin" />
+                              ) : (
+                                <KeyRound size={12} />
+                              )}
+                              <span className="hidden xl:inline">Reset Password</span>
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -124,14 +342,22 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
       {/* Families tab */}
       {tab === 'families' && (
         <>
-          {families.length === 0 ? (
+          {filteredFamilies.length === 0 && filteredUnassigned.length === 0 ? (
             <div className="card p-12 text-center" style={{ color: '#A89888' }}>
               <Home size={40} className="mx-auto mb-3" />
-              <p>No families registered yet.</p>
+              <p>{search ? 'No families match your search.' : 'No families registered yet.'}</p>
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="mt-2 text-sm font-medium" style={{ color: '#E8860C' }}
+                >
+                  Clear search
+                </button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
-              {families.map((family) => {
+              {filteredFamilies.map((family) => {
                 const familyMembers = membersByFamily[family.id] ?? [];
                 return (
                   <div key={family.id} className="card overflow-hidden">
@@ -185,7 +411,7 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
               })}
 
               {/* Unassigned members */}
-              {unassigned.length > 0 && (
+              {filteredUnassigned.length > 0 && (
                 <div className="card overflow-hidden">
                   <div className="px-4 py-3 flex items-center justify-between" style={{ background: '#FDF8F0' }}>
                     <div className="flex items-center gap-2">
@@ -195,11 +421,11 @@ export default function MembersTabs({ members, families, membersByFamily, unassi
                       </span>
                     </div>
                     <span className="text-xs" style={{ color: '#A89888' }}>
-                      {unassigned.length} member{unassigned.length !== 1 ? 's' : ''}
+                      {filteredUnassigned.length} member{filteredUnassigned.length !== 1 ? 's' : ''}
                     </span>
                   </div>
                   <div className="divide-y" style={{ borderColor: 'rgba(107,29,42,0.08)' }}>
-                    {unassigned.map((m) => (
+                    {filteredUnassigned.map((m) => (
                       <div key={m.id} className="px-4 py-3 flex items-center gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">

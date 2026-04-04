@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { User, Mail, Phone, MapPin, Save, LogOut, CheckCircle } from 'lucide-react';
+import MyFamily from '@/components/family/MyFamily';
 
 interface Profile {
   id: string;
@@ -20,6 +21,8 @@ interface Profile {
   zip: string | null;
   country: string | null;
   role: string;
+  family_id: string | null;
+  family_role: string | null;
   avatar_url: string | null;
   created_at: string;
 }
@@ -339,6 +342,14 @@ export default function ProfilePage() {
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
       </form>
+
+      {/* My Family */}
+      <MyFamily
+        userId={profile.id}
+        familyId={profile.family_id}
+        familyRole={profile.family_role}
+        userName={profile.full_name}
+      />
 
       {/* Logout */}
       <button

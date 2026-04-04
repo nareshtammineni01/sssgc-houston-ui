@@ -56,6 +56,8 @@ $$ LANGUAGE sql SECURITY DEFINER STABLE;
 CREATE TABLE families (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   family_name TEXT NOT NULL,
+  invite_code TEXT UNIQUE,
+  head_id UUID,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -67,11 +69,125 @@ CREATE POLICY "Users can view own family" ON families
     id IN (SELECT family_id FROM profiles WHERE profiles.id = auth.uid())
   );
 
+CREATE POLICY "Users can create family" ON families
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can update own family" ON families
+  FOR UPDATE USING (
+    id IN (SELECT family_id FROM profiles WHERE profiles.id = auth.uid())
+  );
+
 CREATE POLICY "Admins can view all families" ON families
   FOR SELECT USING (public.is_admin());
 
 CREATE POLICY "Admins can manage families" ON families
   FOR ALL USING (public.is_admin());
+
+-- Auto-generate invite codes
+CREATE OR REPLACE FUNCTION generate_family_invite_code()
+RETURNS TEXT LANGUAGE plpgsql AS $$
+DECLARE code TEXT; exists_already BOOLEAN;
+BEGIN
+  LOOP
+    code := 'SSSGC-' || upper(substr(md5(random()::text), 1, 5));
+    SELECT EXISTS(SELECT 1 FROM families WHERE invite_code = code) INTO exists_already;
+    IF NOT exists_already THEN RETURN code; END IF;
+  END LOOP;
+END; $$;
+
+CREATE OR REPLACE FUNCTION set_family_invite_code()
+RETURNS TRIGGER LANGUAGE plpgsql SET search_path = public AS $$
+BEGIN
+  IF NEW.invite_code IS NULL THEN NEW.invite_code := generate_family_invite_code(); END IF;
+  RETURN NEW;
+END; $$;
+
+CREATE TRIGGER trg_set_family_invite_code BEFORE INSERT ON families
+  FOR EACH ROW EXECUTE FUNCTION set_family_invite_code();
+
+-- Family members (dependents without accounts)
+CREATE TABLE family_members (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  family_id UUID NOT NULL REFERENCES families(id) ON DELETE CASCADE,
+  added_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  first_name TEXT NOT NULL,
+  last_name TEXT,
+  relationship TEXT NOT NULL CHECK (relationship IN ('spouse', 'child', 'parent', 'sibling', 'other')),
+  date_of_birth DATE,
+  gender TEXT CHECK (gender IN ('male', 'female', 'other', NULL)),
+  phone TEXT,
+  email TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE family_members ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own family members" ON family_members
+  FOR SELECT USING (family_id IN (SELECT family_id FROM profiles WHERE profiles.id = auth.uid()));
+CREATE POLICY "Users can add family members" ON family_members
+  FOR INSERT WITH CHECK (added_by = auth.uid() AND family_id IN (SELECT family_id FROM profiles WHERE profiles.id = auth.uid()));
+CREATE POLICY "Users can update own family members" ON family_members
+  FOR UPDATE USING (added_by = auth.uid());
+CREATE POLICY "Users can delete own family members" ON family_members
+  FOR DELETE USING (added_by = auth.uid());
+CREATE POLICY "Admins can manage all family members" ON family_members
+  FOR ALL USING (public.is_admin());
+
+-- Family RPCs
+CREATE OR REPLACE FUNCTION create_my_family(p_family_name TEXT) RETURNS JSON
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_family_id UUID; v_invite_code TEXT; v_user_id UUID := auth.uid();
+BEGIN
+  IF EXISTS (SELECT 1 FROM profiles WHERE id = v_user_id AND family_id IS NOT NULL) THEN
+    RETURN json_build_object('error', 'You already belong to a family');
+  END IF;
+  INSERT INTO families (family_name, head_id) VALUES (p_family_name, v_user_id)
+    RETURNING id, invite_code INTO v_family_id, v_invite_code;
+  UPDATE profiles SET family_id = v_family_id, family_role = 'head', updated_at = now() WHERE id = v_user_id;
+  RETURN json_build_object('family_id', v_family_id, 'invite_code', v_invite_code);
+END; $$;
+
+CREATE OR REPLACE FUNCTION join_family_by_code(p_invite_code TEXT) RETURNS JSON
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_family_id UUID; v_user_id UUID := auth.uid();
+BEGIN
+  IF EXISTS (SELECT 1 FROM profiles WHERE id = v_user_id AND family_id IS NOT NULL) THEN
+    RETURN json_build_object('error', 'You already belong to a family. Leave your current family first.');
+  END IF;
+  SELECT id INTO v_family_id FROM families WHERE invite_code = upper(trim(p_invite_code));
+  IF v_family_id IS NULL THEN
+    RETURN json_build_object('error', 'Invalid invite code. Please check and try again.');
+  END IF;
+  UPDATE profiles SET family_id = v_family_id, family_role = 'spouse', updated_at = now() WHERE id = v_user_id;
+  RETURN json_build_object('family_id', v_family_id, 'success', true);
+END; $$;
+
+CREATE OR REPLACE FUNCTION leave_family() RETURNS JSON
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE v_user_id UUID := auth.uid(); v_family_id UUID; v_family_role TEXT;
+BEGIN
+  SELECT family_id, family_role INTO v_family_id, v_family_role FROM profiles WHERE id = v_user_id;
+  IF v_family_id IS NULL THEN RETURN json_build_object('error', 'You are not part of any family.'); END IF;
+  UPDATE profiles SET family_id = NULL, family_role = NULL, updated_at = now() WHERE id = v_user_id;
+  IF NOT EXISTS (SELECT 1 FROM profiles WHERE family_id = v_family_id) THEN
+    DELETE FROM family_members WHERE family_id = v_family_id;
+    DELETE FROM families WHERE id = v_family_id;
+  ELSIF v_family_role = 'head' THEN
+    UPDATE profiles SET family_role = 'head', updated_at = now()
+      WHERE id = (SELECT id FROM profiles WHERE family_id = v_family_id LIMIT 1);
+  END IF;
+  RETURN json_build_object('success', true);
+END; $$;
+
+CREATE OR REPLACE FUNCTION admin_link_family(p_profile_id UUID, p_family_id UUID, p_role TEXT DEFAULT 'spouse') RETURNS JSON
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF NOT public.is_admin() THEN RETURN json_build_object('error', 'Admin access required'); END IF;
+  UPDATE profiles SET family_id = p_family_id, family_role = p_role, updated_at = now() WHERE id = p_profile_id;
+  RETURN json_build_object('success', true);
+END; $$;
 
 
 -- ------------------------------------------------------------

@@ -106,9 +106,14 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-1" style={{ color: '#2C1810' }}>
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label htmlFor="password" className="block text-sm font-medium" style={{ color: '#2C1810' }}>
+                  Password
+                </label>
+                <Link href="/forgot-password" className="text-xs font-medium" style={{ color: '#E8860C' }}>
+                  Forgot Password?
+                </Link>
+              </div>
               <div className="relative">
                 <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#A89888' }} />
                 <input id="password" type={showPassword ? 'text' : 'password'} value={password}

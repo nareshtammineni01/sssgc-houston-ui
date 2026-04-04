@@ -37,7 +37,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protect member-only routes
-  const protectedPaths = ['/dashboard', '/settings'];
+  const protectedPaths = ['/dashboard', '/settings', '/profile'];
   const isProtected = protectedPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
