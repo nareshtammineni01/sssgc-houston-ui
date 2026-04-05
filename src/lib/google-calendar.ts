@@ -109,7 +109,7 @@ async function fetchCalendarEvents(
 
   const data = await res.json();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   return (data.items ?? []).map((item: any) => {
     const allDay = !!item.start?.date;
     return {
