@@ -71,6 +71,9 @@ export default function Footer() {
             <p className="text-sm text-maroon-200">
               Sri Sathya Sai Center at Houston
             </p>
+            <p className="text-xs text-maroon-300 mt-0.5">
+              Affiliated to SSSGC, Prasanthi Nilayam
+            </p>
             <p className="text-xs text-maroon-300 mt-1">
               A 501(c)(3) non-profit organization &middot; Katy, TX 77494
             </p>

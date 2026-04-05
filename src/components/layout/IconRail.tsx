@@ -40,6 +40,11 @@ export default function IconRail({ userRole }: IconRailProps) {
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/';
+    // Devotion & Educare icons should highlight for sub-pages too
+    if (href === '/devotion') return pathname.startsWith('/devotion');
+    if (href === '/educare') return pathname.startsWith('/educare');
+    // Seva icon should highlight for /service too
+    if (href === '/seva') return pathname.startsWith('/seva') || pathname.startsWith('/service');
     return pathname.startsWith(href);
   };
 
