@@ -87,11 +87,11 @@ export default async function AdminPage() {
   ]);
 
   const stats = [
-    { label: 'Members', value: membersRes.count ?? 0, icon: Users },
-    { label: 'Families', value: familiesRes.count ?? 0, icon: Users },
-    { label: 'Events', value: eventsRes.count ?? 0, icon: Calendar },
-    { label: 'Resources', value: resourcesRes.count ?? 0, icon: BookOpen },
-    { label: 'Announcements', value: announcementsRes.count ?? 0, icon: Megaphone },
+    { label: 'Members', value: membersRes.count ?? 0, icon: Users, href: '/admin/members' },
+    { label: 'Families', value: familiesRes.count ?? 0, icon: Users, href: '/admin/members' },
+    { label: 'Events', value: eventsRes.count ?? 0, icon: Calendar, href: '/admin/events' },
+    { label: 'Resources', value: resourcesRes.count ?? 0, icon: BookOpen, href: '/admin/resources' },
+    { label: 'Announcements', value: announcementsRes.count ?? 0, icon: Megaphone, href: '/admin/announcements' },
   ];
 
   return (
@@ -104,13 +104,13 @@ export default async function AdminPage() {
       {/* Quick stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {stats.map((stat) => (
-          <div key={stat.label} className="card p-4 flex items-center gap-3">
+          <Link key={stat.label} href={stat.href} className="card p-4 flex items-center gap-3 hover:shadow-md hover:border-[#E8860C]/30 transition-all cursor-pointer">
             <stat.icon size={20} className="text-gray-400" />
             <div>
               <p className="text-xl font-bold text-gray-900">{stat.value}</p>
               <p className="text-xs text-gray-500">{stat.label}</p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Menu, Search, Bell, User, X, UserCog, LogOut } from 'lucide-react';
+import { Menu, Search, Bell, User, X, UserCog, LogOut, LogIn } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface TopBarProps {
@@ -295,30 +295,42 @@ export default function TopBar({ onMenuClick, userName, avatarUrl }: TopBarProps
           {/* Profile dropdown */}
           {showProfileMenu && (
             <div className="absolute right-0 top-[42px] w-[200px] bg-white rounded-xl shadow-lg border border-[rgba(107,29,42,0.1)] overflow-hidden z-50">
-              {userName && (
-                <div className="px-4 py-3 border-b border-[rgba(107,29,42,0.08)]">
-                  <p className="text-[13px] font-semibold truncate" style={{ color: '#2C1810' }}>
-                    {userName}
-                  </p>
-                </div>
+              {userName ? (
+                <>
+                  <div className="px-4 py-3 border-b border-[rgba(107,29,42,0.08)]">
+                    <p className="text-[13px] font-semibold truncate" style={{ color: '#2C1810' }}>
+                      {userName}
+                    </p>
+                  </div>
+                  <Link
+                    href="/profile"
+                    onClick={() => setShowProfileMenu(false)}
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] hover:bg-[#FDF8F0] transition-colors"
+                    style={{ color: '#7A6B5F' }}
+                  >
+                    <UserCog size={15} />
+                    My Profile
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] hover:bg-red-50 transition-colors border-t border-[rgba(107,29,42,0.05)]"
+                    style={{ color: '#DC2626' }}
+                  >
+                    <LogOut size={15} />
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="flex items-center gap-2.5 px-4 py-3 text-[13px] font-medium hover:bg-[#FDF8F0] transition-colors"
+                  style={{ color: '#6B1D2A' }}
+                >
+                  <LogIn size={15} />
+                  Sign In
+                </Link>
               )}
-              <Link
-                href="/profile"
-                onClick={() => setShowProfileMenu(false)}
-                className="flex items-center gap-2.5 px-4 py-2.5 text-[13px] hover:bg-[#FDF8F0] transition-colors"
-                style={{ color: '#7A6B5F' }}
-              >
-                <UserCog size={15} />
-                My Profile
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-[13px] hover:bg-red-50 transition-colors border-t border-[rgba(107,29,42,0.05)]"
-                style={{ color: '#DC2626' }}
-              >
-                <LogOut size={15} />
-                Sign Out
-              </button>
             </div>
           )}
         </div>
