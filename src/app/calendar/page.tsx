@@ -1,8 +1,25 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { ChevronLeft, ChevronRight, MapPin, Clock, Users, CheckCircle, Globe, Star } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import {
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
+  Clock,
+  Users,
+  CheckCircle,
+  Globe,
+  Star,
+  X,
+  Minus,
+  Plus,
+  LogIn,
+  Pencil,
+  Lock,
+  XCircle,
+} from 'lucide-react';
 import { cn, formatTime } from '@/lib/utils';
 import type { Event } from '@/types/database';
 import {
@@ -28,6 +45,20 @@ const CATEGORY_LABELS: Record<string, string> = {
   festival: 'Festival',
 };
 
+/** Check if RSVP deadline has passed */
+function isRsvpClosed(event: Event): boolean {
+  if (event.rsvp_deadline) {
+    return new Date() > new Date(event.rsvp_deadline);
+  }
+  return false;
+}
+
+/** Format a deadline for display */
+function formatDeadline(deadline: string): string {
+  const d = new Date(deadline);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+}
+
 /** Icon for Google Calendar source types */
 function SourceIcon({ source, size = 12 }: { source: CalendarSourceKey; size?: number }) {
   switch (source) {
@@ -46,28 +77,198 @@ function SourceIcon({ source, size = 12 }: { source: CalendarSourceKey; size?: n
   }
 }
 
+/* ------------------------------------------------------------------ */
+/*  RSVP Modal Component (new RSVP + edit existing)                   */
+/* ------------------------------------------------------------------ */
+function RsvpModal({
+  event,
+  onClose,
+  onConfirm,
+  onCancel,
+  currentGuestCount,
+  isEdit,
+}: {
+  event: Event;
+  onClose: () => void;
+  onConfirm: (guestCount: number) => void;
+  onCancel?: () => void;
+  currentGuestCount?: number;
+  isEdit?: boolean;
+}) {
+  const [guestCount, setGuestCount] = useState(currentGuestCount ?? 1);
+  const [submitting, setSubmitting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    await onConfirm(guestCount);
+    setSubmitting(false);
+  };
+
+  const handleCancel = async () => {
+    if (!onCancel) return;
+    setCancelling(true);
+    await onCancel();
+    setCancelling(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+
+      {/* Modal */}
+      <div
+        className="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4"
+        style={{ border: '1px solid rgba(107,29,42,0.1)' }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <X size={18} style={{ color: '#7A6B5F' }} />
+        </button>
+
+        <div>
+          <h3
+            className="text-[18px] leading-tight"
+            style={{
+              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontWeight: 500,
+              color: '#6B1D2A',
+            }}
+          >
+            {isEdit ? 'Update RSVP' : 'RSVP'} — {event.title}
+          </h3>
+          <p className="text-[13px] mt-1" style={{ color: '#7A6B5F' }}>
+            {!event.all_day && formatTime(event.start_time)}
+            {event.location && ` · ${event.location}`}
+          </p>
+        </div>
+
+        {/* Guest count selector */}
+        <div>
+          <label
+            className="block text-[14px] font-medium mb-2"
+            style={{ color: '#2C1810' }}
+          >
+            How many people are attending?
+          </label>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setGuestCount(Math.max(1, guestCount - 1))}
+              disabled={guestCount <= 1}
+              className={cn(
+                'w-9 h-9 rounded-lg flex items-center justify-center transition-colors border',
+                guestCount <= 1
+                  ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                  : 'border-[rgba(107,29,42,0.15)] text-[#6B1D2A] hover:bg-cream-100'
+              )}
+            >
+              <Minus size={16} />
+            </button>
+            <span
+              className="text-[22px] w-10 text-center font-semibold"
+              style={{ color: '#6B1D2A' }}
+            >
+              {guestCount}
+            </span>
+            <button
+              onClick={() => setGuestCount(Math.min(10, guestCount + 1))}
+              disabled={guestCount >= 10}
+              className={cn(
+                'w-9 h-9 rounded-lg flex items-center justify-center transition-colors border',
+                guestCount >= 10
+                  ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                  : 'border-[rgba(107,29,42,0.15)] text-[#6B1D2A] hover:bg-cream-100'
+              )}
+            >
+              <Plus size={16} />
+            </button>
+            <span className="text-[13px]" style={{ color: '#7A6B5F' }}>
+              {guestCount === 1 ? 'person' : 'people'}
+            </span>
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="space-y-2">
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || cancelling}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-[14px] font-medium transition-colors"
+            style={{ background: submitting ? '#A89888' : '#6B1D2A' }}
+          >
+            {submitting ? (
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <CheckCircle size={16} />
+            )}
+            {submitting ? 'Saving...' : isEdit ? 'Update RSVP' : 'Confirm RSVP'}
+          </button>
+
+          {/* Cancel RSVP button (only for edit mode) */}
+          {isEdit && onCancel && (
+            <button
+              onClick={handleCancel}
+              disabled={submitting || cancelling}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[14px] font-medium transition-colors border"
+              style={{
+                color: cancelling ? '#A89888' : '#DC2626',
+                borderColor: cancelling ? '#E5E7EB' : '#FCA5A5',
+                background: cancelling ? '#F9FAFB' : '#FEF2F2',
+              }}
+            >
+              {cancelling ? (
+                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <XCircle size={16} />
+              )}
+              {cancelling ? 'Cancelling...' : 'Cancel RSVP'}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Main Calendar Page                                                */
+/* ------------------------------------------------------------------ */
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<Event[]>([]);
   const [googleEvents, setGoogleEvents] = useState<GoogleCalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [userLoaded, setUserLoaded] = useState(false);
   const [mySignups, setMySignups] = useState<Set<string>>(new Set());
+  const [myGuestCounts, setMyGuestCounts] = useState<Record<string, number>>({});
   const [signupCounts, setSignupCounts] = useState<Record<string, number>>({});
   const [showGoogleCal, setShowGoogleCal] = useState(true);
   const [googleCalLoading, setGoogleCalLoading] = useState(false);
+  const [rsvpModal, setRsvpModal] = useState<{ event: Event; isEdit: boolean } | null>(null);
 
+  const router = useRouter();
   const supabase = createClient();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  // Get user on mount
+  // Track latest userId in a ref so fetchEvents always sees current value
+  const userIdRef = useRef<string | null>(null);
+
+  // Get user on mount, then trigger event fetch
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) setUserId(user.id);
+      if (user) {
+        setUserId(user.id);
+        userIdRef.current = user.id;
+      }
+      setUserLoaded(true);
     })();
   }, []);
 
@@ -88,10 +289,12 @@ export default function CalendarPage() {
     }
   }, [year, month]);
 
+  // Only fetch events AFTER user auth check completes
   useEffect(() => {
+    if (!userLoaded) return;
     fetchEvents();
     fetchGoogleEvents();
-  }, [month, year, fetchGoogleEvents]);
+  }, [month, year, userLoaded, fetchGoogleEvents]);
 
   async function fetchEvents() {
     const startOfMonth = new Date(year, month, 1).toISOString();
@@ -108,67 +311,119 @@ export default function CalendarPage() {
     const evts = data ?? [];
     setEvents(evts);
 
-    // Fetch signup counts for all events
     if (evts.length > 0) {
       const ids = evts.map((e) => e.id);
+
+      // Fetch signup counts for all events (sum of guest_count)
       const { data: signups } = await supabase
         .from('event_signups')
-        .select('event_id')
+        .select('event_id, guest_count')
         .in('event_id', ids)
         .eq('status', 'confirmed');
 
       const counts: Record<string, number> = {};
-      (signups ?? []).forEach((s: { event_id: string }) => {
-        counts[s.event_id] = (counts[s.event_id] || 0) + 1;
+      (signups ?? []).forEach((s: { event_id: string; guest_count: number }) => {
+        counts[s.event_id] = (counts[s.event_id] || 0) + (s.guest_count ?? 1);
       });
       setSignupCounts(counts);
 
-      // Fetch user's own signups
-      if (userId) {
+      // Fetch user's own signups — use ref to always get latest userId
+      const currentUserId = userIdRef.current;
+      if (currentUserId) {
         const { data: mine } = await supabase
           .from('event_signups')
-          .select('event_id')
-          .eq('user_id', userId)
+          .select('event_id, guest_count')
+          .eq('user_id', currentUserId)
           .in('event_id', ids)
           .neq('status', 'cancelled');
 
-        setMySignups(new Set((mine ?? []).map((s: { event_id: string }) => s.event_id)));
+        const signedUpSet = new Set<string>();
+        const guestCounts: Record<string, number> = {};
+        (mine ?? []).forEach((s: { event_id: string; guest_count: number }) => {
+          signedUpSet.add(s.event_id);
+          guestCounts[s.event_id] = s.guest_count ?? 1;
+        });
+        setMySignups(signedUpSet);
+        setMyGuestCounts(guestCounts);
       }
     }
   }
 
-  async function handleRsvp(eventId: string) {
+  function handleRsvpClick(event: Event) {
+    // Require sign-in
+    if (!userId) {
+      router.push(`/login?redirect=/calendar`);
+      return;
+    }
+
+    // Check deadline
+    if (isRsvpClosed(event)) return;
+
+    if (mySignups.has(event.id)) {
+      // Already signed up — open modal in edit mode
+      setRsvpModal({ event, isEdit: true });
+    } else {
+      // New RSVP
+      setRsvpModal({ event, isEdit: false });
+    }
+  }
+
+  async function handleCancel(eventId: string) {
     if (!userId) return;
 
-    if (mySignups.has(eventId)) {
-      // Cancel
-      await supabase
-        .from('event_signups')
-        .update({ status: 'cancelled' })
-        .eq('event_id', eventId)
-        .eq('user_id', userId);
+    const oldGuestCount = myGuestCounts[eventId] ?? 1;
 
-      setMySignups((prev) => {
-        const next = new Set(prev);
-        next.delete(eventId);
-        return next;
-      });
-      setSignupCounts((prev) => ({
-        ...prev,
-        [eventId]: Math.max(0, (prev[eventId] || 0) - 1),
-      }));
-    } else {
-      // Sign up
-      await supabase
-        .from('event_signups')
-        .upsert({ event_id: eventId, user_id: userId, status: 'confirmed' });
+    await supabase
+      .from('event_signups')
+      .update({ status: 'cancelled' })
+      .eq('event_id', eventId)
+      .eq('user_id', userId);
 
-      setMySignups((prev) => new Set(prev).add(eventId));
-      setSignupCounts((prev) => ({
-        ...prev,
-        [eventId]: (prev[eventId] || 0) + 1,
-      }));
-    }
+    setMySignups((prev) => {
+      const next = new Set(prev);
+      next.delete(eventId);
+      return next;
+    });
+    setMyGuestCounts((prev) => {
+      const next = { ...prev };
+      delete next[eventId];
+      return next;
+    });
+    setSignupCounts((prev) => ({
+      ...prev,
+      [eventId]: Math.max(0, (prev[eventId] || 0) - oldGuestCount),
+    }));
+    setRsvpModal(null);
+  }
+
+  async function handleRsvpConfirm(guestCount: number) {
+    if (!userId || !rsvpModal) return;
+
+    const eventId = rsvpModal.event.id;
+    const isEdit = rsvpModal.isEdit;
+    const oldGuestCount = myGuestCounts[eventId] ?? 0;
+
+    await supabase
+      .from('event_signups')
+      .upsert(
+        {
+          event_id: eventId,
+          user_id: userId,
+          status: 'confirmed',
+          guest_count: guestCount,
+        },
+        { onConflict: 'event_id,user_id' }
+      );
+
+    setMySignups((prev) => new Set(prev).add(eventId));
+    setMyGuestCounts((prev) => ({ ...prev, [eventId]: guestCount }));
+
+    // Adjust total count: subtract old, add new
+    setSignupCounts((prev) => ({
+      ...prev,
+      [eventId]: Math.max(0, (prev[eventId] || 0) - (isEdit ? oldGuestCount : 0)) + guestCount,
+    }));
+    setRsvpModal(null);
   }
 
   function prevMonth() {
@@ -384,6 +639,8 @@ export default function CalendarPage() {
                     const count = signupCounts[event.id] || 0;
                     const isSigned = mySignups.has(event.id);
                     const isFull = event.max_capacity ? count >= event.max_capacity : false;
+                    const myGuests = myGuestCounts[event.id];
+                    const closed = isRsvpClosed(event);
 
                     return (
                       <div
@@ -431,9 +688,18 @@ export default function CalendarPage() {
                           )}
                           <p className="flex items-center gap-1.5">
                             <Users size={12} />
-                            {count} signed up
+                            {count} attending
                             {event.max_capacity && ` / ${event.max_capacity}`}
                           </p>
+                          {/* RSVP deadline info */}
+                          {event.rsvp_deadline && (
+                            <p className="flex items-center gap-1.5" style={{ color: closed ? '#DC2626' : '#E8860C' }}>
+                              <Lock size={12} />
+                              {closed
+                                ? `RSVP closed (was ${formatDeadline(event.rsvp_deadline)})`
+                                : `RSVP by ${formatDeadline(event.rsvp_deadline)}`}
+                            </p>
+                          )}
                         </div>
                         {event.description && (
                           <p className="text-[12px] mt-2" style={{ color: '#7A6B5F' }}>
@@ -441,22 +707,61 @@ export default function CalendarPage() {
                           </p>
                         )}
 
-                        {/* RSVP button */}
-                        {userId && (
+                        {/* RSVP buttons */}
+                        {closed ? (
+                          /* RSVP is frozen */
+                          isSigned ? (
+                            <div
+                              className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700"
+                            >
+                              <CheckCircle size={14} />
+                              You&apos;re attending ({myGuests ?? 1} {(myGuests ?? 1) === 1 ? 'person' : 'people'})
+                            </div>
+                          ) : (
+                            <div
+                              className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-400"
+                            >
+                              <Lock size={14} />
+                              RSVP closed
+                            </div>
+                          )
+                        ) : !userId ? (
+                          /* Not signed in */
                           <button
-                            onClick={() => handleRsvp(event.id)}
-                            disabled={!isSigned && isFull}
-                            className={cn(
-                              'mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                              isSigned
-                                ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                                : isFull
-                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                : 'bg-saffron-50 text-saffron-700 hover:bg-saffron-100'
-                            )}
+                            onClick={() => handleRsvpClick(event)}
+                            className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-saffron-50 text-saffron-700 hover:bg-saffron-100 transition-colors"
+                          >
+                            <LogIn size={14} />
+                            Sign in to RSVP
+                          </button>
+                        ) : isSigned ? (
+                          /* Signed up — show status + edit button */
+                          <div className="mt-3 flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 text-green-700">
+                              <CheckCircle size={14} />
+                              Attending · {myGuests ?? 1} {(myGuests ?? 1) === 1 ? 'person' : 'people'}
+                            </div>
+                            <button
+                              onClick={() => handleRsvpClick(event)}
+                              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors hover:bg-cream-100"
+                              style={{ color: '#7A6B5F', borderColor: 'rgba(107,29,42,0.15)' }}
+                            >
+                              <Pencil size={12} />
+                              Edit
+                            </button>
+                          </div>
+                        ) : isFull ? (
+                          <div className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-400">
+                            Full
+                          </div>
+                        ) : (
+                          /* New RSVP */
+                          <button
+                            onClick={() => handleRsvpClick(event)}
+                            className="mt-3 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-saffron-50 text-saffron-700 hover:bg-saffron-100 transition-colors"
                           >
                             <CheckCircle size={14} />
-                            {isSigned ? 'Signed up ✓ (click to cancel)' : isFull ? 'Full' : 'RSVP'}
+                            RSVP
                           </button>
                         )}
                       </div>
@@ -510,6 +815,18 @@ export default function CalendarPage() {
           )}
         </div>
       </div>
+
+      {/* RSVP Modal */}
+      {rsvpModal && (
+        <RsvpModal
+          event={rsvpModal.event}
+          isEdit={rsvpModal.isEdit}
+          currentGuestCount={rsvpModal.isEdit ? myGuestCounts[rsvpModal.event.id] : undefined}
+          onClose={() => setRsvpModal(null)}
+          onConfirm={handleRsvpConfirm}
+          onCancel={rsvpModal.isEdit ? () => handleCancel(rsvpModal.event.id) : undefined}
+        />
+      )}
     </div>
   );
 }

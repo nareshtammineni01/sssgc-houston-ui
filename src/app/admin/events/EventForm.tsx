@@ -51,6 +51,9 @@ export default function EventForm({ mode, event, userId }: EventFormProps) {
         : 'custom'
       : ''
   );
+  const [rsvpDeadline, setRsvpDeadline] = useState(
+    event?.rsvp_deadline ? event.rsvp_deadline.slice(0, 16) : ''
+  );
   const [isCancelled, setIsCancelled] = useState(event?.is_cancelled ?? false);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -84,6 +87,7 @@ export default function EventForm({ mode, event, userId }: EventFormProps) {
       max_capacity: maxCapacity ? parseInt(maxCapacity, 10) : null,
       is_recurring: isRecurring,
       rrule: isRecurring && rrule ? rrule : null,
+      rsvp_deadline: rsvpDeadline ? new Date(rsvpDeadline).toISOString() : null,
       is_cancelled: isCancelled,
     };
 
@@ -174,9 +178,10 @@ export default function EventForm({ mode, event, userId }: EventFormProps) {
         </div>
       </div>
 
-      {/* Max capacity */}
-      <div className="w-48">
+      {/* Max capacity + RSVP deadline */}
+      <div className="grid grid-cols-2 gap-4">
         <FloatingInput label="Max Capacity (optional)" type="number" value={maxCapacity} onChange={(e) => setMaxCapacity(e.target.value)} hint="Leave blank for unlimited" />
+        <FloatingInput label="RSVP Deadline (optional)" type="datetime-local" value={rsvpDeadline} onChange={(e) => setRsvpDeadline(e.target.value)} hint="Leave blank for no deadline" />
       </div>
 
       {/* Recurrence */}

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Pencil, Calendar, Repeat, XCircle } from 'lucide-react';
+import { Plus, Pencil, Calendar, Repeat, XCircle, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const metadata: Metadata = { title: 'Manage Events' };
@@ -73,6 +73,7 @@ export default async function AdminEventsPage() {
                 <th className="text-left px-4 py-3 font-medium">Date &amp; Time</th>
                 <th className="text-left px-4 py-3 font-medium">Location</th>
                 <th className="text-left px-4 py-3 font-medium">Status</th>
+                <th className="text-left px-4 py-3 font-medium">RSVPs</th>
                 <th className="text-right px-4 py-3 font-medium">Actions</th>
               </tr>
             </thead>
@@ -112,6 +113,16 @@ export default async function AdminEventsPage() {
                     ) : (
                       <span className="text-xs text-green-600">Active</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/admin/events/${e.id}/signups`}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors hover:bg-saffron-50"
+                      style={{ color: '#E8860C' }}
+                    >
+                      <Users size={13} />
+                      View
+                    </Link>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

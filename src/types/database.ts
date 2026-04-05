@@ -244,6 +244,7 @@ export type Database = {
           rrule: string | null;
           recurring_parent_id: string | null;
           occurrence_date: string | null;
+          rsvp_deadline: string | null;
           is_cancelled: boolean;
           author_id: string | null;
           created_at: string;
@@ -263,6 +264,7 @@ export type Database = {
           rrule?: string | null;
           recurring_parent_id?: string | null;
           occurrence_date?: string | null;
+          rsvp_deadline?: string | null;
           is_cancelled?: boolean;
           author_id?: string | null;
         };
@@ -277,6 +279,7 @@ export type Database = {
           max_capacity?: number | null;
           is_recurring?: boolean;
           rrule?: string | null;
+          rsvp_deadline?: string | null;
           is_cancelled?: boolean;
           updated_at?: string;
         };
@@ -287,6 +290,7 @@ export type Database = {
           event_id: string;
           user_id: string;
           status: 'confirmed' | 'waitlisted' | 'cancelled';
+          guest_count: number;
           attended: boolean | null;
           created_at: string;
         };
@@ -295,10 +299,12 @@ export type Database = {
           event_id: string;
           user_id: string;
           status?: 'confirmed' | 'waitlisted' | 'cancelled';
+          guest_count?: number;
           attended?: boolean | null;
         };
         Update: {
           status?: 'confirmed' | 'waitlisted' | 'cancelled';
+          guest_count?: number;
           attended?: boolean | null;
         };
       };

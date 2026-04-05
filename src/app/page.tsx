@@ -49,15 +49,15 @@ export default async function HomePage() {
 
   return (
     <div className="page-enter space-y-5">
-      {/* ===== HERO — with blended Sai Baba image ===== */}
+      {/* ===== HERO — compact with blended Sai Baba image ===== */}
       <section
-        className="relative rounded-xl overflow-hidden min-h-[280px] md:min-h-[320px]"
+        className="relative rounded-xl overflow-hidden min-h-[160px] md:min-h-[180px]"
         style={{
           background: 'linear-gradient(135deg, #4A1219 0%, #6B1D2A 60%, #E8860C 140%)',
         }}
       >
         {/* Sai Baba image — right side, blended (desktop) */}
-        <div className="absolute inset-y-0 right-0 w-[55%] hidden md:block">
+        <div className="absolute inset-y-0 right-0 w-[45%] hidden md:block">
           <Image
             src="/sai-baba-new-image.png"
             alt="Sri Sathya Sai Baba"
@@ -81,13 +81,13 @@ export default async function HomePage() {
 
         {/* Animated divine glow behind image */}
         <div
-          className="absolute right-12 top-1/2 -translate-y-1/2 w-80 h-80 rounded-full hidden md:block sai-glow"
-          style={{ background: 'rgba(232,134,12,0.35)', filter: 'blur(60px)' }}
+          className="absolute right-8 top-1/2 -translate-y-1/2 w-56 h-56 rounded-full hidden md:block sai-glow"
+          style={{ background: 'rgba(232,134,12,0.35)', filter: 'blur(50px)' }}
         />
         {/* Second inner glow - brighter core */}
         <div
-          className="absolute right-24 top-1/2 -translate-y-1/2 w-48 h-48 rounded-full hidden md:block sai-glow"
-          style={{ background: 'rgba(240,222,180,0.25)', filter: 'blur(40px)', animationDelay: '1s' }}
+          className="absolute right-16 top-1/2 -translate-y-1/2 w-32 h-32 rounded-full hidden md:block sai-glow"
+          style={{ background: 'rgba(240,222,180,0.25)', filter: 'blur(30px)', animationDelay: '1s' }}
         />
 
         {/* Gradient overlay to keep text readable */}
@@ -99,13 +99,13 @@ export default async function HomePage() {
         />
 
         {/* Text content */}
-        <div className="relative z-10 p-7 md:p-10 flex flex-col justify-center h-full">
-          <div className="max-w-[480px]">
-            <p className="text-[13px] mb-2" style={{ color: '#F0DEB4' }}>
+        <div className="relative z-10 p-5 md:px-8 md:py-5 flex flex-col justify-center h-full">
+          <div className="max-w-[520px]">
+            <p className="text-[12px] mb-1" style={{ color: '#F0DEB4' }}>
               Om Sri Sai Ram
             </p>
             <h1
-              className="text-[24px] md:text-[32px] leading-[1.2] mb-2"
+              className="text-[20px] md:text-[26px] leading-[1.2] mb-1.5"
               style={{
                 fontFamily: "'Cormorant Garamond', Georgia, serif",
                 fontWeight: 500,
@@ -114,16 +114,17 @@ export default async function HomePage() {
             >
               Welcome to Sri Sathya Sai Center at Houston
             </h1>
-            <p className="text-[14px] leading-relaxed mb-6" style={{ color: 'rgba(255,255,255,0.7)' }}>
-              A spiritual community inspired by the teachings of Sri Sathya Sai Baba.
-              Join us for devotion, education, and selfless service.
-            </p>
-            {!user && (
-              <div className="flex gap-3">
-                <Link href="/login" className="btn-primary">Join us</Link>
-                <Link href="/about" className="btn-secondary">Learn more</Link>
-              </div>
-            )}
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+              <p className="text-[13px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                A spiritual community inspired by the teachings of Sri Sathya Sai Baba.
+              </p>
+              {!user && (
+                <div className="flex gap-2 flex-shrink-0">
+                  <Link href="/login" className="btn-primary text-[13px] px-4 py-1.5">Join us</Link>
+                  <Link href="/about" className="btn-secondary text-[13px] px-4 py-1.5">Learn more</Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
