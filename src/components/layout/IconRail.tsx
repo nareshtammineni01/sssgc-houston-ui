@@ -69,7 +69,7 @@ export default function IconRail({ userRole }: IconRailProps) {
             )}
             title={item.label}
           >
-            <item.icon size={16} />
+            <item.icon size={22} />
             <span className="text-[8px] leading-none">{item.label}</span>
           </Link>
         ))}
@@ -90,7 +90,7 @@ export default function IconRail({ userRole }: IconRailProps) {
                 )}
                 title={item.label}
               >
-                <item.icon size={16} />
+                <item.icon size={22} />
                 <span className="text-[8px] leading-none">{item.label}</span>
               </Link>
             ))}
@@ -113,7 +113,7 @@ export default function IconRail({ userRole }: IconRailProps) {
                 )}
                 title={item.label}
               >
-                <item.icon size={16} />
+                <item.icon size={22} />
                 <span className="text-[8px] leading-none">{item.label}</span>
               </Link>
             ))}

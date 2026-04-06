@@ -201,7 +201,7 @@ export default function Sidebar({ isOpen, onClose, userRole, userName }: Sidebar
                         : 'text-[#7A6B5F] hover:bg-[#FDF8F0] hover:text-[#2C1810]'
                     )}
                   >
-                    <item.icon size={15} />
+                    <item.icon size={20} />
                     <span className="flex-1 text-left">{item.label}</span>
                     <ChevronDown
                       size={14}
@@ -257,7 +257,7 @@ export default function Sidebar({ isOpen, onClose, userRole, userName }: Sidebar
                     : 'text-[#7A6B5F] hover:bg-[#FDF8F0] hover:text-[#2C1810]'
                 )}
               >
-                <item.icon size={15} />
+                <item.icon size={20} />
                 <span className="flex-1">{item.label}</span>
               </Link>
             );
@@ -276,7 +276,7 @@ export default function Sidebar({ isOpen, onClose, userRole, userName }: Sidebar
                   : 'text-[#7A6B5F] hover:bg-[#FDF8F0] hover:text-[#2C1810]'
               )}
             >
-              <item.icon size={15} />
+              <item.icon size={20} />
               <span className="flex-1">{item.label}</span>
             </Link>
           ))}
@@ -299,7 +299,7 @@ export default function Sidebar({ isOpen, onClose, userRole, userName }: Sidebar
                   : 'text-[#7A6B5F] hover:bg-[#FDF8F0] hover:text-[#2C1810]'
               )}
             >
-              <item.icon size={15} />
+              <item.icon size={20} />
               {item.label}
             </Link>
           ))}
@@ -324,7 +324,7 @@ export default function Sidebar({ isOpen, onClose, userRole, userName }: Sidebar
                       : 'text-[#7A6B5F] hover:bg-[#FDF8F0] hover:text-[#2C1810]'
                   )}
                 >
-                  <item.icon size={15} />
+                  <item.icon size={20} />
                   {item.label}
                 </Link>
               ))}
