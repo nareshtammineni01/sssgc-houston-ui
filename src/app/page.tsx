@@ -1,4 +1,6 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { siteConfig } from '@/lib/config';
 import { formatDate, formatTime } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -9,6 +11,36 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { LiveTicker } from '@/components/home/LiveTicker';
+
+export const revalidate = 86400;
+
+export const metadata: Metadata = {
+  title: 'Sri Sathya Sai Center at Houston — Devotion, Educare, Seva',
+  description:
+    'A spiritual community in Katy, TX inspired by the teachings of Sri Sathya Sai Baba. Weekly bhajans, prayers, children\'s educare, and community seva. Open to all.',
+  keywords: [
+    'Sri Sathya Sai Baba',
+    'Sai Center Houston',
+    'SSSGC Houston',
+    'bhajans',
+    'devotional songs',
+    'prayers',
+    'Katy TX',
+    'spiritual community',
+    'educare',
+    'seva',
+  ],
+  openGraph: {
+    title: 'Sri Sathya Sai Center at Houston',
+    description:
+      'A spiritual community in Katy, TX. Devotion, Educare, Seva — open to all.',
+    type: 'website',
+    url: siteConfig.url,
+  },
+  alternates: {
+    canonical: siteConfig.url,
+  },
+};
 
 export default async function HomePage() {
   const supabase = createClient();
@@ -47,8 +79,31 @@ export default async function HomePage() {
     .order('start_time', { ascending: true })
     .limit(3);
 
+  // WebSite + SearchAction JSON-LD — tells Google/AI about search capability
+  const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: siteConfig.name,
+    url: siteConfig.url,
+    description: siteConfig.description,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${siteConfig.url}/search?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   return (
     <div className="page-enter space-y-5">
+      {/* Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+
       {/* ===== HERO — compact with blended Sai Baba image ===== */}
       <section
         className="relative rounded-xl overflow-hidden min-h-[160px] md:min-h-[180px]"

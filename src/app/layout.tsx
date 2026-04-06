@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { AppShell } from '@/components/layout';
 import { createClient } from '@/lib/supabase/server';
 import { siteConfig } from '@/lib/config';
+import { OrganizationJsonLd } from '@/components/seo';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
+        <OrganizationJsonLd />
         <AppShell
           userName={profile?.full_name ?? null}
           avatarUrl={profile?.avatar_url ?? null}
