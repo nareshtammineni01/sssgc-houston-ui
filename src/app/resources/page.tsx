@@ -1,291 +1,172 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
-  Search,
-  BookOpen,
   Music,
+  BookOpen,
   FileText,
-  Heart,
-  Eye,
   Headphones,
-  ArrowLeft,
+  Search,
+  ChevronRight,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { Resource } from '@/types/database';
+import { getResourceCounts, getDeityList } from '@/lib/api/resources';
+import { Breadcrumbs } from '@/components/seo';
 
-const categories = [
-  { key: 'all', label: 'All', icon: BookOpen },
-  { key: 'bhajan', label: 'Bhajans', icon: Music },
-  { key: 'prayer', label: 'Prayers', icon: BookOpen },
-  { key: 'study_circle', label: 'Study Circle', icon: FileText },
-  { key: 'document', label: 'Documents', icon: FileText },
-  { key: 'bhajan_resource', label: 'Bhajan Resources', icon: Headphones },
-];
+export const revalidate = 86400; // ISR: regenerate once per day
 
-const categoryColors: Record<string, string> = {
-  bhajan: 'bg-saffron-50 text-saffron-600',
-  prayer: 'bg-maroon-50 text-maroon-600',
-  study_circle: 'bg-blue-50 text-blue-600',
-  document: 'bg-gray-100 text-gray-600',
-  bhajan_resource: 'bg-gold-50 text-gold-600',
+export const metadata: Metadata = {
+  title: 'Resources — Bhajans, Prayers & Study Materials',
+  description:
+    'Browse bhajans, prayers, study circle materials, and documents at Sri Sathya Sai Center Houston. 700+ devotional songs with lyrics and audio.',
+  openGraph: {
+    title: 'Resources | SSSGC Houston',
+    description:
+      'Bhajans, prayers, study materials, and documents at Sri Sathya Sai Center Houston.',
+    type: 'website',
+  },
 };
 
-export default function ResourcesPage() {
-  const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') ?? '';
+const sections = [
+  {
+    key: 'bhajan',
+    title: 'Bhajans',
+    description: 'Devotional songs with lyrics and audio',
+    href: '/bhajans',
+    icon: Music,
+    color: 'bg-saffron-50 border-saffron-200 hover:border-saffron-400',
+    iconColor: 'text-saffron-600',
+  },
+  {
+    key: 'prayer',
+    title: 'Prayers',
+    description: 'Mantras and sacred texts for daily practice',
+    href: '/prayers',
+    icon: BookOpen,
+    color: 'bg-maroon-50 border-maroon-200 hover:border-maroon-400',
+    iconColor: 'text-maroon-600',
+  },
+  {
+    key: 'study_circle',
+    title: 'Study Circle',
+    description: 'Discussion guides and reading materials',
+    href: '/resources?type=study_circle',
+    icon: FileText,
+    color: 'bg-blue-50 border-blue-200 hover:border-blue-400',
+    iconColor: 'text-blue-600',
+  },
+  {
+    key: 'document',
+    title: 'Documents',
+    description: 'Center guides, schedules, and reference materials',
+    href: '/resources?type=document',
+    icon: FileText,
+    color: 'bg-gray-50 border-gray-200 hover:border-gray-400',
+    iconColor: 'text-gray-600',
+  },
+  {
+    key: 'bhajan_resource',
+    title: 'Bhajan Resources',
+    description: 'Learning tools, notation, and practice audio',
+    href: '/resources?type=bhajan_resource',
+    icon: Headphones,
+    color: 'bg-amber-50 border-amber-200 hover:border-amber-400',
+    iconColor: 'text-amber-600',
+  },
+];
 
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [loading, setLoading] = useState(true);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [userId, setUserId] = useState<string | null>(null);
-
-  const supabase = createClient();
-
-  // Get current user + favorites on mount
-  useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-        const { data: favs } = await supabase
-          .from('favorites')
-          .select('resource_id')
-          .eq('user_id', user.id);
-        if (favs) {
-          setFavorites(new Set(favs.map((f: { resource_id: string }) => f.resource_id)));
-        }
-      }
-    })();
-  }, []);
-
-  // Fetch on category change or initial query
-  useEffect(() => {
-    if (initialQuery) {
-      doSearch(initialQuery);
-    } else {
-      fetchResources();
-    }
-  }, [activeCategory]);
-
-  async function fetchResources() {
-    setLoading(true);
-    let query = supabase
-      .from('resources')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (activeCategory !== 'all') {
-      query = query.eq('category', activeCategory);
-    }
-
-    const { data } = await query;
-    setResources(data ?? []);
-    setLoading(false);
-  }
-
-  async function doSearch(q: string) {
-    if (!q.trim()) {
-      fetchResources();
-      return;
-    }
-    setLoading(true);
-    const { data } = await supabase.rpc('search_resources', {
-      search_query: q,
-    });
-    setResources(data ?? []);
-    setLoading(false);
-  }
-
-  async function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    doSearch(searchQuery);
-  }
-
-  async function toggleFavorite(resourceId: string) {
-    if (!userId) return;
-
-    if (favorites.has(resourceId)) {
-      setFavorites((prev) => {
-        const next = new Set(prev);
-        next.delete(resourceId);
-        return next;
-      });
-      await supabase
-        .from('favorites')
-        .delete()
-        .eq('user_id', userId)
-        .eq('resource_id', resourceId);
-    } else {
-      setFavorites((prev) => new Set(prev).add(resourceId));
-      await supabase
-        .from('favorites')
-        .insert({ user_id: userId, resource_id: resourceId });
-    }
-  }
+export default async function ResourcesHubPage() {
+  const [counts, deities] = await Promise.all([
+    getResourceCounts(),
+    getDeityList(),
+  ]);
 
   return (
-    <div className="page-enter space-y-5 px-4 sm:px-0">
-      <div className="flex flex-col gap-4">
-        <h1 className="text-h1">Resources</h1>
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      <Breadcrumbs items={[{ name: 'Resources', href: '/resources' }]} />
 
-        {/* Search */}
-        <form onSubmit={handleSearch} className="flex items-center gap-2 w-full">
-          <div className="relative flex-1 max-w-md">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search bhajans, prayers, documents..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl border text-[15px] focus:outline-none focus:ring-2 focus:ring-saffron-300"
-              style={{ borderColor: 'rgba(107,29,42,0.15)', color: '#2C1810' }}
-            />
-          </div>
-        </form>
-      </div>
+      <header className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-serif font-bold text-maroon-700 mb-2">
+          Resources
+        </h1>
+        <p className="text-text-muted text-lg">
+          Explore our collection of devotional songs, prayers, and study materials
+        </p>
+      </header>
 
-      {/* Category filters — wrap on mobile instead of horizontal scroll */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {categories.map((cat) => (
-          <button
-            key={cat.key}
-            onClick={() => { setActiveCategory(cat.key); setSearchQuery(''); }}
-            className={cn(
-              'flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors',
-              activeCategory === cat.key
-                ? 'bg-saffron-500 text-white'
-                : 'bg-white border hover:bg-cream-50'
-            )}
-            style={
-              activeCategory !== cat.key
-                ? { borderColor: 'rgba(107,29,42,0.12)', color: '#7A6B5F' }
-                : {}
-            }
-          >
-            <cat.icon size={14} />
-            {cat.label}
-          </button>
-        ))}
-      </div>
+      {/* Search CTA */}
+      <Link
+        href="/search"
+        className="flex items-center gap-2 mb-8 px-4 py-3 rounded-lg border border-cream-200 bg-cream-50 hover:border-saffron-300 transition-colors text-text-muted"
+      >
+        <Search className="h-4 w-4" />
+        <span>Search all resources...</span>
+      </Link>
 
-      {/* Resource list */}
-      {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="card p-5 animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-3" />
-              <div className="h-3 bg-gray-100 rounded w-full mb-2" />
-              <div className="h-3 bg-gray-100 rounded w-2/3" />
-            </div>
-          ))}
-        </div>
-      ) : resources.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {resources.map((resource) => (
+      {/* Category Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+        {sections.map((section) => {
+          const Icon = section.icon;
+          const count = counts[section.key] ?? 0;
+
+          return (
             <Link
-              key={resource.id}
-              href={`/resources/${resource.id}`}
-              className="card p-5 group hover:border-[#E8860C] transition-colors cursor-pointer block"
+              key={section.key}
+              href={section.href}
+              className={`group p-5 rounded-xl border-2 transition-all ${section.color}`}
             >
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <span
-                  className={cn(
-                    'inline-block px-3 py-1 rounded-full text-[13px] font-medium capitalize',
-                    categoryColors[resource.category] ?? 'bg-gray-100 text-gray-600'
-                  )}
-                >
-                  {resource.category.replace('_', ' ')}
-                </span>
-                {userId && (
-                  <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(resource.id); }}
-                    className="p-1 rounded-lg hover:bg-cream-100 transition-colors"
-                    title={favorites.has(resource.id) ? 'Remove from favorites' : 'Add to favorites'}
-                  >
-                    <Heart
-                      size={16}
-                      className={
-                        favorites.has(resource.id)
-                          ? 'fill-red-500 text-red-500'
-                          : 'text-gray-300'
-                      }
-                    />
-                  </button>
-                )}
+              <div className="flex items-center gap-3 mb-2">
+                <Icon className={`h-6 w-6 ${section.iconColor}`} />
+                <h2 className="text-lg font-serif font-semibold text-maroon-700">
+                  {section.title}
+                </h2>
               </div>
-
-              <h3
-                className="text-[18px] font-semibold mb-1.5 group-hover:text-[#E8860C] transition-colors leading-snug"
-                style={{ color: '#2C1810' }}
-              >
-                {resource.title}
-              </h3>
-
-              {resource.deity && (
-                <p className="text-[15px] mb-1.5" style={{ color: '#E8860C' }}>
-                  {resource.deity}
-                </p>
-              )}
-
-              {resource.content && (
-                <p
-                  className="text-[16px] line-clamp-2 mb-3 leading-relaxed"
-                  style={{ color: '#7A6B5F' }}
-                >
-                  {resource.content.slice(0, 120)}
-                  {resource.content.length > 120 ? '...' : ''}
-                </p>
-              )}
-
-              <div className="flex items-center gap-3 text-[15px]" style={{ color: '#A89888' }}>
-                <span className="flex items-center gap-1.5">
-                  <Eye size={16} />
-                  {resource.view_count}
+              <p className="text-sm text-text-muted mb-3">
+                {section.description}
+              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-text-muted">
+                  {count.toLocaleString()} items
                 </span>
-                {resource.file_url && (
-                  <span className="flex items-center gap-1.5">
-                    <FileText size={16} />
-                    PDF
-                  </span>
-                )}
-                {resource.audio_url && (
-                  <span className="flex items-center gap-1.5">
-                    <Headphones size={16} />
-                    Audio
-                  </span>
-                )}
+                <ChevronRight className="h-4 w-4 text-text-light group-hover:translate-x-0.5 transition-transform" />
               </div>
-
-              {/* Keywords */}
-              {resource.keywords && resource.keywords.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {resource.keywords.slice(0, 4).map((kw) => (
-                    <span
-                      key={kw}
-                      className="text-[13px] px-2.5 py-1 rounded bg-cream-100"
-                      style={{ color: '#7A6B5F' }}
-                    >
-                      {kw}
-                    </span>
-                  ))}
-                </div>
-              )}
             </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="card p-12 text-center">
-          <BookOpen size={40} className="mx-auto mb-4" style={{ color: '#A89888' }} />
-          <p style={{ color: '#7A6B5F' }}>No resources found. Try a different search or category.</p>
-        </div>
+          );
+        })}
+      </div>
+
+      {/* Deity Quick Links (SEO internal linking) */}
+      {deities.length > 0 && (
+        <section className="mb-12">
+          <h2 className="text-xl font-serif font-semibold text-maroon-700 mb-4">
+            Browse Bhajans by Deity
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {deities.map((deity) => (
+              <Link
+                key={deity}
+                href={`/bhajans/deity/${deity.toLowerCase().replace(/\s+/g, '-')}`}
+                className="px-3 py-1.5 rounded-full text-sm bg-cream-100 text-text-main hover:bg-saffron-100 hover:text-saffron-800 transition-colors"
+              >
+                {deity}
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
+
+      {/* About section for SEO content */}
+      <section className="p-6 rounded-xl bg-cream-50 border border-cream-200">
+        <h2 className="text-lg font-serif font-semibold text-maroon-700 mb-2">
+          About Our Resource Library
+        </h2>
+        <p className="text-sm text-text-muted leading-relaxed">
+          The Sri Sathya Sai Center at Houston maintains a growing collection of
+          devotional resources for spiritual seekers. Our library includes over{' '}
+          {(counts.bhajan ?? 0).toLocaleString()} bhajan lyrics with audio,{' '}
+          {counts.prayer ?? 0} prayers and mantras, study circle discussion
+          guides, and reference documents. All resources are freely available as
+          part of our commitment to spiritual education and devotion.
+        </p>
+      </section>
     </div>
   );
 }

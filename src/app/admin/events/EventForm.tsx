@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Save, Trash2, Repeat } from 'lucide-react';
 import { FloatingInput, FloatingSelect, FloatingTextarea } from '@/components/ui/FloatingField';
+import { triggerRevalidation } from '@/lib/api/revalidate';
 import type { Event } from '@/types/database';
 
 type EventCategory = Event['category'];
@@ -109,6 +110,9 @@ export default function EventForm({ mode, event, userId }: EventFormProps) {
       return;
     }
 
+    // Revalidate public pages so changes appear immediately
+    triggerRevalidation({ type: 'event' });
+
     startTransition(() => {
       router.push('/admin/events');
       router.refresh();
@@ -127,6 +131,9 @@ export default function EventForm({ mode, event, userId }: EventFormProps) {
       setSaving(false);
       return;
     }
+
+    // Revalidate public pages after deletion
+    triggerRevalidation({ type: 'event' });
 
     startTransition(() => {
       router.push('/admin/events');

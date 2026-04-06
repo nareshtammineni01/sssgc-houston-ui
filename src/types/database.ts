@@ -233,6 +233,7 @@ export type Database = {
         Row: {
           id: string;
           title: string;
+          slug: string;
           description: string | null;
           category: 'devotion' | 'educare' | 'seva' | 'festival';
           location: string | null;
@@ -253,6 +254,7 @@ export type Database = {
         Insert: {
           id?: string;
           title: string;
+          slug?: string;
           description?: string | null;
           category: 'devotion' | 'educare' | 'seva' | 'festival';
           location?: string | null;
@@ -270,6 +272,7 @@ export type Database = {
         };
         Update: {
           title?: string;
+          slug?: string;
           description?: string | null;
           category?: 'devotion' | 'educare' | 'seva' | 'festival';
           location?: string | null;
@@ -369,7 +372,9 @@ export type Database = {
         Row: {
           id: string;
           title: string;
+          slug: string;
           content: string | null;
+          meta_description: string | null;
           category: 'bhajan' | 'prayer' | 'study_circle' | 'document' | 'bhajan_resource';
           keywords: string[] | null;
           deity: string | null;
@@ -383,7 +388,9 @@ export type Database = {
         Insert: {
           id?: string;
           title: string;
+          slug?: string;
           content?: string | null;
+          meta_description?: string | null;
           category: 'bhajan' | 'prayer' | 'study_circle' | 'document' | 'bhajan_resource';
           keywords?: string[] | null;
           deity?: string | null;
@@ -393,7 +400,9 @@ export type Database = {
         };
         Update: {
           title?: string;
+          slug?: string;
           content?: string | null;
+          meta_description?: string | null;
           category?: 'bhajan' | 'prayer' | 'study_circle' | 'document' | 'bhajan_resource';
           keywords?: string[] | null;
           deity?: string | null;

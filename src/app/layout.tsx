@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 import { AppShell } from '@/components/layout';
 import { createClient } from '@/lib/supabase/server';
+import { siteConfig } from '@/lib/config';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Sri Sathya Sai Center at Houston',
-    template: '%s | SSSGC Houston',
+    default: siteConfig.name,
+    template: `%s | ${siteConfig.shortName}`,
   },
-  description:
-    'A spiritual community in Katy, TX inspired by the teachings of Sri Sathya Sai Baba. Devotion, Educare, Seva — open to all.',
-  metadataBase: new URL('https://sssgc-houston.org'),
+  description: siteConfig.description,
+  metadataBase: new URL(siteConfig.url),
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-icon.png',
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    siteName: 'Sri Sathya Sai Center at Houston',
+    siteName: siteConfig.name,
   },
 };
 

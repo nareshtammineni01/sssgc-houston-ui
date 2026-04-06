@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Save, Trash2, X } from 'lucide-react';
 import { FloatingInput, FloatingSelect, FloatingTextarea } from '@/components/ui/FloatingField';
+import { triggerRevalidation } from '@/lib/api/revalidate';
 import type { Resource } from '@/types/database';
 
 type ResourceCategory = Resource['category'];
@@ -72,6 +73,13 @@ export default function ResourceForm({ mode, resource, userId }: ResourceFormPro
       return;
     }
 
+    // Revalidate public SEO pages so changes appear immediately
+    triggerRevalidation({
+      type: 'resource',
+      category,
+      slug: resource?.slug,
+    });
+
     startTransition(() => {
       router.push('/admin/resources');
       router.refresh();
@@ -81,6 +89,9 @@ export default function ResourceForm({ mode, resource, userId }: ResourceFormPro
   async function handleDelete() {
     if (!resource) return;
     if (!window.confirm('Delete this resource permanently?')) return;
+
+    const deletedCategory = resource.category;
+    const deletedSlug = resource.slug;
 
     setSaving(true);
     const { error: err } = await supabase
@@ -93,6 +104,13 @@ export default function ResourceForm({ mode, resource, userId }: ResourceFormPro
       setSaving(false);
       return;
     }
+
+    // Revalidate public SEO pages after deletion
+    triggerRevalidation({
+      type: 'resource',
+      category: deletedCategory,
+      slug: deletedSlug,
+    });
 
     startTransition(() => {
       router.push('/admin/resources');
