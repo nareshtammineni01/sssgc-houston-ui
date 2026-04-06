@@ -15,6 +15,7 @@ import {
   UserCircle,
   UserCog,
   Shield,
+  Settings,
   HelpCircle,
   Mail,
   Megaphone,
@@ -84,6 +85,7 @@ const moreNav = [
 
 const adminNav = [
   { label: 'Admin Panel', href: '/admin', icon: Shield },
+  { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
 /** Check if current path is within a nav item's section */

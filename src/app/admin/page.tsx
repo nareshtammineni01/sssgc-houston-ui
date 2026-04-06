@@ -10,6 +10,7 @@ import {
   Users,
   Quote,
   BarChart3,
+  Settings,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -58,6 +59,13 @@ const adminModules = [
     href: '/admin/quotes',
     icon: Quote,
     color: 'bg-purple-50 text-purple-500',
+  },
+  {
+    title: 'Settings',
+    desc: 'Search mode, AI features, and embeddings',
+    href: '/admin/settings',
+    icon: Settings,
+    color: 'bg-gray-50 text-gray-500',
   },
 ];
 

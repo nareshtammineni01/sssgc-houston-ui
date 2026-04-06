@@ -56,10 +56,14 @@ export default function ResourceForm({ mode, resource, userId }: ResourceFormPro
     };
 
     let result;
+    let newResourceId: string | null = null;
     if (mode === 'create') {
       result = await supabase
         .from('resources')
-        .insert({ ...payload, author_id: userId });
+        .insert({ ...payload, author_id: userId })
+        .select('id')
+        .single();
+      newResourceId = result.data?.id ?? null;
     } else {
       result = await supabase
         .from('resources')
@@ -79,6 +83,16 @@ export default function ResourceForm({ mode, resource, userId }: ResourceFormPro
       category,
       slug: resource?.slug,
     });
+
+    // Auto-generate embedding for this resource (fire-and-forget)
+    const embedId = mode === 'edit' ? resource?.id : newResourceId;
+    if (embedId) {
+      fetch('/api/embeddings/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resourceId: embedId }),
+      }).catch(() => {}); // Silent — embedding is non-critical
+    }
 
     startTransition(() => {
       router.push('/admin/resources');

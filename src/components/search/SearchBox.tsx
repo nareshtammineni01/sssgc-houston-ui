@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, Music, BookOpen, FileText, Headphones, X, Loader2 } from 'lucide-react';
+import { Search, Music, BookOpen, FileText, Headphones, X, Loader2, Sparkles } from 'lucide-react';
 
 interface SearchResult {
   id: string;
@@ -12,6 +12,14 @@ interface SearchResult {
   deity: string | null;
   audio_url: string | null;
   content: string | null;
+  similarity: number | null;
+}
+
+interface SearchResponse {
+  results: SearchResult[];
+  mode: 'standard' | 'ai';
+  usedVector: boolean;
+  aiSummary: string | null;
 }
 
 const categoryConfig: Record<string, { label: string; icon: typeof Music; iconBg: string; iconColor: string }> = {
@@ -30,18 +38,20 @@ function getResultHref(result: SearchResult): string {
 
 export function SearchBox({ autoFocus = false }: { autoFocus?: boolean }) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [response, setResponse] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  const results = response?.results ?? [];
+  const aiSummary = response?.aiSummary ?? null;
+
   const search = useCallback(async (q: string) => {
-    // Cancel any in-flight request
     if (abortRef.current) abortRef.current.abort();
 
     if (q.length < 2) {
-      setResults([]);
+      setResponse(null);
       setHasSearched(false);
       setLoading(false);
       return;
@@ -55,11 +65,11 @@ export function SearchBox({ autoFocus = false }: { autoFocus?: boolean }) {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
         signal: controller.signal,
       });
-      const data = await res.json();
-      setResults(data.results ?? []);
+      const data: SearchResponse = await res.json();
+      setResponse(data);
       setHasSearched(true);
     } catch {
-      // Aborted or network error — ignore
+      // Aborted or network error
     } finally {
       setLoading(false);
     }
@@ -103,7 +113,7 @@ export function SearchBox({ autoFocus = false }: { autoFocus?: boolean }) {
             />
             {query && (
               <button
-                onClick={() => { setQuery(''); setResults([]); setHasSearched(false); inputRef.current?.focus(); }}
+                onClick={() => { setQuery(''); setResponse(null); setHasSearched(false); inputRef.current?.focus(); }}
                 className="flex-shrink-0 p-1 rounded-full hover:bg-[#FDF8F0] transition-colors"
               >
                 <X size={16} style={{ color: '#A89888' }} />
@@ -113,11 +123,34 @@ export function SearchBox({ autoFocus = false }: { autoFocus?: boolean }) {
         </div>
       </div>
 
+      {/* AI Summary */}
+      {aiSummary && (
+        <div
+          className="flex items-start gap-3 p-4 rounded-xl"
+          style={{ background: 'linear-gradient(135deg, #FFFCF7 0%, #FDF2F4 100%)', border: '1px solid rgba(232,134,12,0.2)' }}
+        >
+          <Sparkles size={18} className="flex-shrink-0 mt-0.5" style={{ color: '#E8860C' }} />
+          <div>
+            <p className="text-[13px] leading-relaxed" style={{ color: '#2C1810' }}>
+              {aiSummary}
+            </p>
+            <p className="text-[10px] mt-1.5" style={{ color: '#A89888' }}>
+              AI-powered answer · Results below
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Results */}
       {hasSearched && (
         <div>
           <p className="text-[12px] mb-3" style={{ color: '#A89888' }}>
             {results.length} result{results.length !== 1 ? 's' : ''} for &ldquo;{query}&rdquo;
+            {response?.usedVector && (
+              <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px]" style={{ background: '#F0FDF4', color: '#16A34A' }}>
+                semantic
+              </span>
+            )}
           </p>
 
           {results.length > 0 ? (
@@ -192,7 +225,7 @@ export function SearchBox({ autoFocus = false }: { autoFocus?: boolean }) {
         </div>
       )}
 
-      {/* Empty state — no query yet */}
+      {/* Empty state */}
       {!hasSearched && !loading && (
         <div className="text-center py-8">
           <p className="text-[13px] mb-4" style={{ color: '#A89888' }}>
