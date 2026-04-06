@@ -17,26 +17,27 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
   return (
     <>
       <BreadcrumbJsonLd items={allItems} />
-      <nav aria-label="Breadcrumb" className="mb-4">
-        <ol className="flex items-center gap-1.5 text-sm text-text-muted flex-wrap">
+      <nav aria-label="Breadcrumb" className="mb-1">
+        <ol className="flex items-center gap-1.5 text-[14px] flex-wrap" style={{ color: '#A89888' }}>
           {allItems.map((item, index) => {
             const isLast = index === allItems.length - 1;
             return (
               <li key={item.href} className="flex items-center gap-1.5">
                 {index > 0 && (
-                  <ChevronRight className="h-3.5 w-3.5 text-text-light flex-shrink-0" />
+                  <ChevronRight size={12} className="flex-shrink-0" style={{ color: '#D1C7BC' }} />
                 )}
                 {index === 0 && (
-                  <Home className="h-3.5 w-3.5 flex-shrink-0" />
+                  <Home size={12} className="flex-shrink-0" />
                 )}
                 {isLast ? (
-                  <span className="text-text-main font-medium truncate max-w-[200px]">
+                  <span className="font-medium truncate max-w-[200px]" style={{ color: '#2C1810' }}>
                     {item.name}
                   </span>
                 ) : (
                   <Link
                     href={item.href}
-                    className="hover:text-saffron-600 transition-colors truncate max-w-[200px]"
+                    className="hover:underline truncate max-w-[200px] transition-colors"
+                    style={{ color: '#E8860C' }}
                   >
                     {item.name}
                   </Link>

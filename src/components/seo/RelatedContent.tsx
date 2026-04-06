@@ -14,11 +14,7 @@ interface RelatedContentProps {
   heading?: string;
 }
 
-export function RelatedContent({
-  items,
-  type,
-  heading,
-}: RelatedContentProps) {
+export function RelatedContent({ items, type, heading }: RelatedContentProps) {
   if (items.length === 0) return null;
 
   const basePath = type === 'bhajan' ? '/bhajans' : '/prayers';
@@ -26,35 +22,44 @@ export function RelatedContent({
   const defaultHeading = type === 'bhajan' ? 'Related Bhajans' : 'Related Prayers';
 
   return (
-    <section className="mt-12 pt-8 border-t border-cream-200">
-      <h2 className="text-xl font-serif font-semibold text-maroon-700 mb-4">
+    <div className="pt-4" style={{ borderTop: '1px solid rgba(107,29,42,0.1)' }}>
+      <p
+        className="text-[16px] mb-3"
+        style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, color: '#6B1D2A' }}
+      >
         {heading ?? defaultHeading}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {items.map((item) => (
           <Link
             key={item.slug}
             href={`${basePath}/${item.slug}`}
-            className="group flex items-center gap-3 p-3 rounded-lg border border-cream-200 hover:border-saffron-300 hover:bg-saffron-50/50 transition-all"
+            className="card flex items-center gap-3 px-4 py-3 group hover:border-[#E8860C] transition-colors"
           >
-            <div className="flex-shrink-0 w-9 h-9 rounded-full bg-cream-100 group-hover:bg-saffron-100 flex items-center justify-center transition-colors">
+            <div
+              className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center"
+              style={{ background: type === 'bhajan' ? '#FFF8EB' : '#FDF2F4' }}
+            >
               {item.audio_url ? (
-                <Headphones className="h-4 w-4 text-saffron-600" />
+                <Headphones size={16} style={{ color: '#E8860C' }} />
               ) : (
-                <Icon className="h-4 w-4 text-maroon-500" />
+                <Icon size={16} style={{ color: type === 'bhajan' ? '#C46F0A' : '#6B1D2A' }} />
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-text-main group-hover:text-saffron-700 truncate transition-colors">
+              <p
+                className="text-[13px] font-medium group-hover:text-[#E8860C] truncate transition-colors"
+                style={{ color: '#2C1810' }}
+              >
                 {item.title}
               </p>
               {item.deity && (
-                <p className="text-xs text-text-muted">{item.deity}</p>
+                <p className="text-[11px]" style={{ color: '#A89888' }}>{item.deity}</p>
               )}
             </div>
           </Link>
         ))}
       </div>
-    </section>
+    </div>
   );
 }

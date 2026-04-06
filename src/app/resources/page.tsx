@@ -1,17 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  Music,
-  BookOpen,
-  FileText,
-  Headphones,
-  Search,
-  ChevronRight,
-} from 'lucide-react';
+import { Music, BookOpen, FileText, Headphones } from 'lucide-react';
 import { getResourceCounts, getDeityList } from '@/lib/api/resources';
 import { Breadcrumbs } from '@/components/seo';
+import { SearchBox } from '@/components/search/SearchBox';
 
-export const revalidate = 86400; // ISR: regenerate once per day
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: 'Resources — Bhajans, Prayers & Study Materials',
@@ -32,8 +26,8 @@ const sections = [
     description: 'Devotional songs with lyrics and audio',
     href: '/bhajans',
     icon: Music,
-    color: 'bg-saffron-50 border-saffron-200 hover:border-saffron-400',
-    iconColor: 'text-saffron-600',
+    iconBg: '#FFF8EB',
+    iconColor: '#E8860C',
   },
   {
     key: 'prayer',
@@ -41,8 +35,8 @@ const sections = [
     description: 'Mantras and sacred texts for daily practice',
     href: '/prayers',
     icon: BookOpen,
-    color: 'bg-maroon-50 border-maroon-200 hover:border-maroon-400',
-    iconColor: 'text-maroon-600',
+    iconBg: '#FDF2F4',
+    iconColor: '#6B1D2A',
   },
   {
     key: 'study_circle',
@@ -50,8 +44,8 @@ const sections = [
     description: 'Discussion guides and reading materials',
     href: '/resources?type=study_circle',
     icon: FileText,
-    color: 'bg-blue-50 border-blue-200 hover:border-blue-400',
-    iconColor: 'text-blue-600',
+    iconBg: '#EFF6FF',
+    iconColor: '#2563EB',
   },
   {
     key: 'document',
@@ -59,8 +53,8 @@ const sections = [
     description: 'Center guides, schedules, and reference materials',
     href: '/resources?type=document',
     icon: FileText,
-    color: 'bg-gray-50 border-gray-200 hover:border-gray-400',
-    iconColor: 'text-gray-600',
+    iconBg: '#F3F4F6',
+    iconColor: '#6B7280',
   },
   {
     key: 'bhajan_resource',
@@ -68,8 +62,8 @@ const sections = [
     description: 'Learning tools, notation, and practice audio',
     href: '/resources?type=bhajan_resource',
     icon: Headphones,
-    color: 'bg-amber-50 border-amber-200 hover:border-amber-400',
-    iconColor: 'text-amber-600',
+    iconBg: '#FFF8EB',
+    iconColor: '#C46F0A',
   },
 ];
 
@@ -80,29 +74,21 @@ export default async function ResourcesHubPage() {
   ]);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="page-enter space-y-5">
       <Breadcrumbs items={[{ name: 'Resources', href: '/resources' }]} />
 
-      <header className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-maroon-700 mb-2">
-          Resources
-        </h1>
-        <p className="text-text-muted text-lg">
+      <div>
+        <h1 className="text-h1">Resources</h1>
+        <p className="text-[13px] mt-1" style={{ color: '#7A6B5F' }}>
           Explore our collection of devotional songs, prayers, and study materials
         </p>
-      </header>
+      </div>
 
-      {/* Search CTA */}
-      <Link
-        href="/search"
-        className="flex items-center gap-2 mb-8 px-4 py-3 rounded-lg border border-cream-200 bg-cream-50 hover:border-saffron-300 transition-colors text-text-muted"
-      >
-        <Search className="h-4 w-4" />
-        <span>Search all resources...</span>
-      </Link>
+      {/* Inline Search */}
+      <SearchBox />
 
       {/* Category Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {sections.map((section) => {
           const Icon = section.icon;
           const count = counts[section.key] ?? 0;
@@ -111,54 +97,68 @@ export default async function ResourcesHubPage() {
             <Link
               key={section.key}
               href={section.href}
-              className={`group p-5 rounded-xl border-2 transition-all ${section.color}`}
+              className="card p-5 group hover:border-[#E8860C] transition-all hover:-translate-y-0.5"
             >
               <div className="flex items-center gap-3 mb-2">
-                <Icon className={`h-6 w-6 ${section.iconColor}`} />
-                <h2 className="text-lg font-serif font-semibold text-maroon-700">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: section.iconBg }}
+                >
+                  <Icon size={18} style={{ color: section.iconColor }} />
+                </div>
+                <div
+                  className="text-[16px]"
+                  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 600, color: '#6B1D2A' }}
+                >
                   {section.title}
-                </h2>
+                </div>
               </div>
-              <p className="text-sm text-text-muted mb-3">
+              <p className="text-[12px] mb-3" style={{ color: '#7A6B5F' }}>
                 {section.description}
               </p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-text-muted">
-                  {count.toLocaleString()} items
-                </span>
-                <ChevronRight className="h-4 w-4 text-text-light group-hover:translate-x-0.5 transition-transform" />
-              </div>
+              <span className="text-[13px] font-medium" style={{ color: '#A89888' }}>
+                {count.toLocaleString()} items
+              </span>
             </Link>
           );
         })}
       </div>
 
-      {/* Deity Quick Links (SEO internal linking) */}
+      {/* Deity Quick Links */}
       {deities.length > 0 && (
-        <section className="mb-12">
-          <h2 className="text-xl font-serif font-semibold text-maroon-700 mb-4">
+        <div className="card p-4">
+          <p className="text-[12px] font-medium mb-2" style={{ color: '#6B1D2A' }}>
             Browse Bhajans by Deity
-          </h2>
+          </p>
           <div className="flex flex-wrap gap-2">
             {deities.map((deity) => (
               <Link
                 key={deity}
                 href={`/bhajans/deity/${deity.toLowerCase().replace(/\s+/g, '-')}`}
-                className="px-3 py-1.5 rounded-full text-sm bg-cream-100 text-text-main hover:bg-saffron-100 hover:text-saffron-800 transition-colors"
+                className="filter-chip"
               >
                 {deity}
               </Link>
             ))}
           </div>
-        </section>
+        </div>
       )}
 
-      {/* About section for SEO content */}
-      <section className="p-6 rounded-xl bg-cream-50 border border-cream-200">
-        <h2 className="text-lg font-serif font-semibold text-maroon-700 mb-2">
-          About Our Resource Library
-        </h2>
-        <p className="text-sm text-text-muted leading-relaxed">
+      {/* About section for SEO */}
+      <div
+        className="rounded-xl p-5 border-l-4"
+        style={{
+          background: 'white',
+          borderColor: '#E8860C',
+          borderTop: '1px solid rgba(107,29,42,0.1)',
+          borderRight: '1px solid rgba(107,29,42,0.1)',
+          borderBottom: '1px solid rgba(107,29,42,0.1)',
+        }}
+      >
+        <p
+          className="text-[14px] leading-relaxed"
+          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", color: '#2C1810' }}
+        >
           The Sri Sathya Sai Center at Houston maintains a growing collection of
           devotional resources for spiritual seekers. Our library includes over{' '}
           {(counts.bhajan ?? 0).toLocaleString()} bhajan lyrics with audio,{' '}
@@ -166,7 +166,7 @@ export default async function ResourcesHubPage() {
           guides, and reference documents. All resources are freely available as
           part of our commitment to spiritual education and devotion.
         </p>
-      </section>
+      </div>
     </div>
   );
 }
